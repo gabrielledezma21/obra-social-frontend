@@ -85,11 +85,16 @@ export default function AltaTurnosForm() {
 
           navigateToEdicion(data.id, { created: true });
         } catch (err) {
-          const msg = err?.response?.data || '';
+          const response = err?.response?.data;
+          const existingId = response?.existingAgendaId;
+          const message =
+            typeof response === 'string'
+              ? response
+              : response?.message || response?.error || err?.message || '';
 
-          const match = msg.match(/#(\d+)#/);
-          if (match?.[1]) {
-            setAgendaExistenteId(match[1]);
+          const legacyMatch = message.match(/#([a-f0-9]{24})#/i);
+          if (existingId || legacyMatch?.[1]) {
+            setAgendaExistenteId(existingId || legacyMatch[1]);
             setSaving(false);
             return;
           }
