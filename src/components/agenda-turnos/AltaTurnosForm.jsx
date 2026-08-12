@@ -36,6 +36,7 @@ export default function AltaTurnosForm() {
 
   const [saving, setSaving] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [agendaExistenteId, setAgendaExistenteId] = useState(null);
 
   const { validateBeforeSave } = useFormValidation(validateAltaTurnos);
@@ -99,6 +100,9 @@ export default function AltaTurnosForm() {
             return;
           }
 
+          setErrorMessage(
+            message || 'Ocurrió un error al guardar la agenda de turnos.'
+          );
           setShowError(true);
         } finally {
           setSaving(false);
@@ -206,7 +210,7 @@ export default function AltaTurnosForm() {
         open={showError}
         autoHideDuration={4000}
         onClose={() => setShowError(false)}
-        message="Ocurrió un error al guardar la agenda de turnos."
+        message={errorMessage || 'Ocurrió un error al guardar la agenda de turnos.'}
       />
     </Box>
   );
