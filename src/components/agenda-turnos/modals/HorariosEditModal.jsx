@@ -67,6 +67,10 @@ export default function HorariosEditModal({ open, onClose }) {
 
   const handleHorarioChange = useCallback((index, field, value) => {
     setLocalHorarios((prev) => {
+      if (field === 'duracion') {
+        return prev.map((horario) => ({ ...horario, duracion: value }));
+      }
+
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
       return updated;
