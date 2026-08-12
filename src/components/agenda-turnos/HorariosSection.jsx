@@ -36,6 +36,7 @@ export default function HorariosSection({
     [horarios]
   );
 
+  // La API admite duraciones desde 15 minutos.
   const duraciones = React.useMemo(
     () => Array.from({ length: 22 }, (_, i) => (i + 3) * 5),
     []
