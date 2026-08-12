@@ -1,7 +1,7 @@
 import { toMinutes } from './dateUtils';
 
 export const buildDuraciones = () =>
-  Array.from({ length: 24 }, (_, i) => (i + 1) * 5);
+  Array.from({ length: 22 }, (_, i) => (i + 3) * 5);
 
 export const isWithin = (start, end, rangeStart, rangeEnd) => {
   const [s, e, rs, re] = [start, end, rangeStart, rangeEnd].map(toMinutes);
