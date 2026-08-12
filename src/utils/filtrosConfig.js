@@ -10,14 +10,14 @@ export const filtrosConfig = {
         label: 'Provincia',
         type: 'select',
         options: [],
-        asyncSearchUrl: '/agenda-turnos/provincias',
+        asyncSearchUrl: '/prestadores/provincias',
       },
       {
         name: 'localidad',
         label: 'Localidad',
         type: 'select',
         options: [],
-        asyncSearchUrl: '/agenda-turnos/localidades',
+        asyncSearchUrl: '/prestadores/localidades',
       },
       {
         name: 'dia',
