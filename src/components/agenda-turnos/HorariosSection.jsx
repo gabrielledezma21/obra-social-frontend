@@ -37,7 +37,7 @@ export default function HorariosSection({
   );
 
   const duraciones = React.useMemo(
-    () => Array.from({ length: 24 }, (_, i) => (i + 1) * 5),
+    () => Array.from({ length: 22 }, (_, i) => (i + 3) * 5),
     []
   );
 
