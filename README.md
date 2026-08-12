@@ -11,13 +11,10 @@ MedIntegral-frontend es la parte visual del proyecto MedIntegral, pensado para a
 
 ---
 
-## Aplicación Productiva
+## Aplicación
 
-La versión productiva de MedIntegral se encuentra actualmente desplegada y accesible en:
-
-[https://medintegral.vmdigitai.com/](https://medintegral.vmdigitai.com/)
-
-Desde esta instancia se puede acceder a todas las funcionalidades principales del sistema:
+Esta versión está adaptada para desplegarse en Vercel y consumir la API pública
+de MedIntegral. Incluye las funcionalidades principales del sistema:
 
 - Gestión de prestadores
 
@@ -28,8 +25,6 @@ Desde esta instancia se puede acceder a todas las funcionalidades principales de
 - Estadísticas en tiempo real
 
 - Navegación optimizada y UI responsiva
-
-La aplicación se actualiza automáticamente con cada merge a dev de este repositorio.
 
 ---
 
@@ -58,8 +53,8 @@ Esta organización sigue buenas prácticas de proyectos React + Vite, manteniend
 1. Clonar el repositorio
 
 ```
- git clone https://github.com/DesApp-2025c2-Grupo3/MedIntegral-frontend.git
- cd MedIntegral-frontend
+git clone https://github.com/gabrielledezma21/obra-social-frontend.git
+cd obra-social-frontend
 ```
 
 2. Instalar dependencias
