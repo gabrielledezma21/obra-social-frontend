@@ -204,9 +204,16 @@ export const afiliadoToLegacy = (raw = {}) => {
     situacionesTerapeuticas: (raw.situacionesTerapeuticas ?? []).map(
       (item) => ({
         id: getId(item),
+        nombre: item?.nombre ?? '',
+        fechaInicio: item?.fechaInicio ?? null,
+        fechaFin: item?.fechaFin ?? null,
+        AfiliadoSituaciones: item?.AfiliadoSituaciones ?? {
+          fechaInicio: item?.fechaInicio ?? null,
+          fechaFin: item?.fechaFin ?? null,
+        },
         situacion: {
           id: getId(item),
-          nombre: item?.nombre ?? String(item ?? ''),
+          nombre: item?.nombre ?? '',
         },
       })
     ),
