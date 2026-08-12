@@ -17,13 +17,17 @@ export const createAgendaTurnos = async ({
   direccion,
   horarios,
 }) => {
-  if (!prestador?.id || !especialidad?.id || !direccion?.id) {
-    throw new Error('Faltan IDs obligatorios para crear la agenda de turnos');
+  const prestadorId = getId(prestador);
+  const especialidadId = getId(especialidad);
+  const centroDeAtencionId = getId(direccion);
+
+  if (!prestadorId || !especialidadId || !centroDeAtencionId) {
+    throw new Error('No se pudieron identificar el prestador, la especialidad o el centro de atención');
   }
   const { data } = await api.post('/agendas', {
-    prestadorId: prestador.id,
-    especialidadId: especialidad.id,
-    centroDeAtencionId: direccion.id,
+    prestadorId,
+    especialidadId,
+    centroDeAtencionId,
     horario: rowsToSchedule(horarios),
   });
   return { ...data, id: getId(data) };
