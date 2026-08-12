@@ -1,0 +1,85 @@
+import api from './api';
+import { formatAgendaTurnosListado } from '../utils/formats/agendaTurnosListado';
+import { formatAgendaTurnosDetalle } from '../utils/formats/agendaTurnosDetalle';
+import { formatAgendaTurnosPrestador } from '../utils/formats/agendaTurnosPrestador';
+import {
+  agendaToLegacy,
+  filterByText,
+  getId,
+  paginate,
+  prestadorToLegacy,
+  rowsToSchedule,
+} from './apiAdapters';
+
+export const createAgendaTurnos = async ({
+  prestador,
+  especialidad,
+  direccion,
+  horarios,
+}) => {
+  if (!prestador?.id || !especialidad?.id || !direccion?.id) {
+    throw new Error('Faltan IDs obligatorios para crear la agenda de turnos');
+  }
+  const { data } = await api.post('/agendas', {
+    prestadorId: prestador.id,
+    especialidadId: especialidad.id,
+    centroDeAtencionId: direccion.id,
+    horario: rowsToSchedule(horarios),
+  });
+  return { ...data, id: getId(data) };
+};
+
+export const getAgendaTurnosListado = async (
+  filters = {},
+  page = 0,
+  limit = 10
+) => {
+  try {
+    const { data } = await api.get('/agendas');
+    const legacy = (Array.isArray(data) ? data : []).map(agendaToLegacy);
+    const filtered = filterByText(legacy, filters, [
+      (item) => item.prestador?.nombre,
+      (item) => item.especialidad?.nombre,
+      (item) => item.direccion?.localidad,
+    ]);
+    return formatAgendaTurnosListado(paginate(filtered, page, limit));
+  } catch (err) {
+    console.error('Error al obtener listado de agendas de turnos:', err);
+    throw err;
+  }
+};
+
+export const getPrestadores = async () => {
+  const { data } = await api.get('/prestadores');
+  return (Array.isArray(data) ? data : []).map((raw) => {
+    const legacy = prestadorToLegacy(raw);
+    return formatAgendaTurnosPrestador(legacy);
+  });
+};
+
+export const getPrestadorById = async (id) => {
+  if (!id) throw new Error('Se requiere un ID de prestador');
+  const { data } = await api.get(`/prestadores/${id}`);
+  return formatAgendaTurnosPrestador(prestadorToLegacy(data));
+};
+
+export const getAgendaTurnoById = async (id) => {
+  if (!id) throw new Error('Se requiere un ID de agenda de turnos');
+  const { data } = await api.get(`/agendas/${id}`);
+  return formatAgendaTurnosDetalle(agendaToLegacy(data));
+};
+
+export const updateAgendaEspecialidad = async () => {
+  throw new Error(
+    'La API actual no permite cambiar la especialidad de una agenda.'
+  );
+};
+
+export const updateAgendaHorarios = async (id, horarios) => {
+  const { data } = await api.put(`/agendas/${id}`, {
+    horario: rowsToSchedule(horarios),
+  });
+  return formatAgendaTurnosDetalle(agendaToLegacy(data));
+};
+
+export const deleteAgendaTurnos = (id) => api.delete(`/agendas/${id}`);

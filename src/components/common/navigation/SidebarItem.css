@@ -1,0 +1,117 @@
+.sidebar-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-item-button {
+  border-radius: 12px;
+  margin-inline: 6px;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+.sidebar-item-button:hover {
+  background-color: rgba(0, 174, 239, 0.1);
+}
+
+.sidebar-item-button.active {
+  background-color: rgba(0, 174, 239, 0.15);
+}
+
+.sidebar-item-button.active:hover {
+  background-color: rgba(0, 174, 239, 0.22);
+}
+
+.sidebar-item-icon {
+  color: #ffffff;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+}
+
+.sidebar-item-icon.active {
+  color: #00aeef;
+}
+
+.sidebar-item-text {
+  color: #ffffff;
+  font-weight: 400;
+  transition: color 0.3s ease;
+}
+
+.sidebar-item-text.active {
+  color: #00aeef;
+  font-weight: 600;
+}
+
+.sidebar-sublist {
+  padding-left: 4px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-subitem {
+  border-radius: 8px;
+  margin-inline: 8px;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 6px 10px;
+}
+
+.sidebar-subitem:hover {
+  background-color: rgba(0, 174, 239, 0.22);
+}
+
+.sidebar-subitem.active {
+  background-color: rgba(0, 174, 239, 0.15);
+}
+
+.sidebar-subitem-icon {
+  color: #ffffff;
+  transition: color 0.3s ease;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-subitem.active .sidebar-subitem-icon {
+  color: #00aeef;
+}
+
+.sidebar-subitem-text {
+  color: #ffffff;
+  font-weight: 400;
+  transition: color 0.3s ease;
+}
+
+.sidebar-subitem.active .sidebar-subitem-text {
+  color: #00aeef;
+  font-weight: 600;
+}
+
+.sidebar-collapsed {
+  justify-content: center;
+  padding: 0.4rem 0;
+  gap: 0;
+}
+
+.sidebar-collapsed .sidebar-item-text {
+  display: none;
+}
+
+.MuiTooltip-tooltip {
+  background-color: #3d4b6b !important;
+  font-size: 0.85rem !important;
+  border-radius: 6px !important;
+}

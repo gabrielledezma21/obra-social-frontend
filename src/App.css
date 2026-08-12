@@ -1,0 +1,17 @@
+.MuiFormHelperText-root {
+  margin-left: 0px !important;
+  margin-right: 0px !important;
+}
+
+.MuiChip-colorDefault {
+  background-color: #00b1ea !important;
+  color: #fff !important;
+}
+
+.MuiChip-colorDefault .MuiChip-deleteIcon {
+  color: rgba(255, 255, 255, 0.842) !important;
+}
+
+.MuiChip-colorDefault .MuiChip-deleteIcon:hover {
+  color: rgb(255 255 255) !important;
+}
