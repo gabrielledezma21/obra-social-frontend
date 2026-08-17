@@ -31,6 +31,10 @@ import IconoTurnos from '@mui/icons-material/CalendarTodayOutlined';
 import IconoCartilla from '@mui/icons-material/MedicalInformationOutlined';
 import IconoHistoria from '@mui/icons-material/HistoryEduOutlined';
 import IconoFlecha from '@mui/icons-material/ArrowForwardOutlined';
+import IconoExpandir from '@mui/icons-material/ExpandMore';
+import IconoContraer from '@mui/icons-material/ExpandLess';
+import IconoListaTurnos from '@mui/icons-material/FormatListBulletedOutlined';
+import IconoAgregar from '@mui/icons-material/Add';
 import { Outlet, useNavigate } from 'react-router-dom';
 import LogoMarca from '../components/common/BrandLogo';
 import PiePagina from '../components/Footer';
@@ -49,21 +53,51 @@ const COLOR_OSCURO = '#0B111E';
 const COLOR_PRINCIPAL = '#00B1EA';
 const COLOR_FONDO = '#F8F8F8';
 
+const ELEMENTO_MIS_SOLICITUDES = {
+  clave: 'mis-solicitudes',
+  etiqueta: 'Mis solicitudes',
+  icono: IconoSolicitudes,
+  pestana: 1,
+};
+
+const ELEMENTO_NUEVA_SOLICITUD = {
+  clave: 'nueva-solicitud',
+  etiqueta: 'Nueva solicitud',
+  icono: IconoSolicitudNueva,
+  pestana: 0,
+};
+
+const ELEMENTO_MIS_TURNOS = {
+  clave: 'mis-turnos',
+  etiqueta: 'Mis turnos',
+  icono: IconoListaTurnos,
+  pestana: 2,
+  vistaTurnos: 'listado',
+};
+
+const ELEMENTO_SACAR_TURNO = {
+  clave: 'sacar-turno',
+  etiqueta: 'Sacar turno',
+  icono: IconoAgregar,
+  pestana: 2,
+  vistaTurnos: 'sacar',
+};
+
 const ELEMENTOS_AFILIADO = [
   { clave: 'resumen', etiqueta: 'Resumen', icono: IconoResumen },
-  {
-    clave: 'nueva-solicitud',
-    etiqueta: 'Nueva solicitud',
-    icono: IconoSolicitudNueva,
-    pestana: 0,
-  },
   {
     clave: 'solicitudes',
     etiqueta: 'Solicitudes',
     icono: IconoSolicitudes,
-    pestana: 1,
+    hijos: [ELEMENTO_MIS_SOLICITUDES, ELEMENTO_NUEVA_SOLICITUD],
   },
-  { clave: 'turnos', etiqueta: 'Turnos', icono: IconoTurnos, pestana: 2 },
+  {
+    clave: 'turnos',
+    etiqueta: 'Turnos',
+    icono: IconoTurnos,
+    pestana: 2,
+    hijos: [ELEMENTO_MIS_TURNOS, ELEMENTO_SACAR_TURNO],
+  },
   {
     clave: 'cartilla',
     etiqueta: 'Cartilla médica',
@@ -217,7 +251,7 @@ function DashboardAfiliado({ datos, seleccionarElemento }) {
                 <Typography variant="h6">Próximos turnos</Typography>
                 <Button
                   endIcon={<IconoFlecha />}
-                  onClick={() => seleccionarElemento(ELEMENTOS_AFILIADO[3])}
+                  onClick={() => seleccionarElemento(ELEMENTO_MIS_TURNOS)}
                 >
                   Ver turnos
                 </Button>
@@ -272,7 +306,7 @@ function DashboardAfiliado({ datos, seleccionarElemento }) {
               >
                 <Typography variant="h6">Solicitudes a revisar</Typography>
                 <Button
-                  onClick={() => seleccionarElemento(ELEMENTOS_AFILIADO[2])}
+                  onClick={() => seleccionarElemento(ELEMENTO_MIS_SOLICITUDES)}
                 >
                   Ver todas
                 </Button>
@@ -313,21 +347,21 @@ function DashboardAfiliado({ datos, seleccionarElemento }) {
             <Button
               variant="contained"
               startIcon={<IconoSolicitudNueva />}
-              onClick={() => seleccionarElemento(ELEMENTOS_AFILIADO[1])}
+              onClick={() => seleccionarElemento(ELEMENTO_NUEVA_SOLICITUD)}
             >
               Nueva solicitud
             </Button>
             <Button
               variant="outlined"
               startIcon={<IconoTurnos />}
-              onClick={() => seleccionarElemento(ELEMENTOS_AFILIADO[3])}
+              onClick={() => seleccionarElemento(ELEMENTO_SACAR_TURNO)}
             >
               Buscar turno
             </Button>
             <Button
               variant="outlined"
               startIcon={<IconoCartilla />}
-              onClick={() => seleccionarElemento(ELEMENTOS_AFILIADO[4])}
+              onClick={() => seleccionarElemento(ELEMENTOS_AFILIADO[3])}
             >
               Ver cartilla médica
             </Button>
@@ -562,6 +596,7 @@ export default function DisenoPortal() {
   const [barraAbierta, setBarraAbierta] = useState(false);
   const [menuMobileAbierto, setMenuMobileAbierto] = useState(false);
   const [elementoActivo, setElementoActivo] = useState('resumen');
+  const [grupoAbierto, setGrupoAbierto] = useState(null);
   const [datosResumen, setDatosResumen] = useState({
     perfil: null,
     resumen: {},
@@ -625,6 +660,17 @@ export default function DisenoPortal() {
     const pestanas = document.querySelectorAll('[role="tab"]');
     const pestanaObjetivo = pestanas[elemento.pestana];
     if (pestanaObjetivo) pestanaObjetivo.click();
+
+    if (elemento.vistaTurnos) {
+      window.setTimeout(() => {
+        window.dispatchEvent(
+          new CustomEvent('medintegral:navegar-turnos', {
+            detail: { vista: elemento.vistaTurnos },
+          })
+        );
+      }, 0);
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -632,13 +678,34 @@ export default function DisenoPortal() {
     <List className="sidebar-list" sx={{ flexGrow: 1 }}>
       {elementos.map((elemento) => {
         const Icono = elemento.icono;
-        const seleccionado = elementoActivo === elemento.clave;
+        const esGrupo = Boolean(elemento.hijos?.length);
+        const hijoActivo =
+          esGrupo &&
+          elemento.hijos.some((hijo) => hijo.clave === elementoActivo);
+        const seleccionado =
+          elementoActivo === elemento.clave || Boolean(hijoActivo);
+        const estaAbierto = grupoAbierto === elemento.clave;
+
+        const manejarClickPrincipal = () => {
+          if (esGrupo) {
+            if (!abierta && !esMobile) {
+              setBarraAbierta(true);
+              setGrupoAbierto(elemento.clave);
+              return;
+            }
+            setGrupoAbierto((grupoActual) =>
+              grupoActual === elemento.clave ? null : elemento.clave
+            );
+            return;
+          }
+          seleccionarElemento(elemento);
+        };
 
         const boton = (
           <ListItemButton
             key={elemento.clave}
             selected={seleccionado}
-            onClick={() => seleccionarElemento(elemento)}
+            onClick={manejarClickPrincipal}
             className={`sidebar-item-button ${seleccionado ? 'active' : ''}`}
             sx={{ justifyContent: abierta ? 'initial' : 'center' }}
           >
@@ -649,34 +716,72 @@ export default function DisenoPortal() {
               <Icono />
             </ListItemIcon>
             {abierta && (
-              <ListItemText
-                primary={elemento.etiqueta}
-                className={`sidebar-item-text ${seleccionado ? 'active' : ''}`}
-                primaryTypographyProps={{ fontSize: '1rem' }}
-              />
+              <>
+                <ListItemText
+                  primary={elemento.etiqueta}
+                  className={`sidebar-item-text ${seleccionado ? 'active' : ''}`}
+                  primaryTypographyProps={{ fontSize: '1rem' }}
+                />
+                {esGrupo &&
+                  (estaAbierto ? <IconoContraer /> : <IconoExpandir />)}
+              </>
             )}
           </ListItemButton>
         );
 
-        return abierta ? (
-          <Box
-            key={elemento.clave}
-            className={`sidebar-item ${seleccionado ? 'active' : ''}`}
-          >
+        const principal = abierta ? (
+          <Box className={`sidebar-item ${seleccionado ? 'active' : ''}`}>
             {boton}
           </Box>
         ) : (
-          <Tooltip
-            key={elemento.clave}
-            title={elemento.etiqueta}
-            placement="right"
-          >
+          <Tooltip title={elemento.etiqueta} placement="right">
             <Box
               className={`sidebar-item collapsed ${seleccionado ? 'active' : ''}`}
             >
               {boton}
             </Box>
           </Tooltip>
+        );
+
+        if (!esGrupo || !abierta || !estaAbierto) {
+          return <Box key={elemento.clave}>{principal}</Box>;
+        }
+
+        return (
+          <Box key={elemento.clave}>
+            {principal}
+            {elemento.hijos.map((hijo) => {
+              const IconoHijo = hijo.icono;
+              const hijoSeleccionado = elementoActivo === hijo.clave;
+              return (
+                <ListItemButton
+                  key={hijo.clave}
+                  selected={hijoSeleccionado}
+                  onClick={() => seleccionarElemento(hijo)}
+                  className={`sidebar-item-button ${
+                    hijoSeleccionado ? 'active' : ''
+                  }`}
+                  sx={{ pl: 4.5, minHeight: 48 }}
+                >
+                  <ListItemIcon
+                    className={`sidebar-item-icon ${
+                      hijoSeleccionado ? 'active' : ''
+                    }`}
+                    sx={{ minWidth: 40 }}
+                  >
+                    <IconoHijo />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={hijo.etiqueta}
+                    className={`sidebar-item-text ${
+                      hijoSeleccionado ? 'active' : ''
+                    }`}
+                    primaryTypographyProps={{ fontSize: '0.95rem' }}
+                  />
+                </ListItemButton>
+              );
+            })}
+          </Box>
         );
       })}
     </List>
