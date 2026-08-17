@@ -16,14 +16,16 @@ export const formatAfiliadosListado = (data) => {
         `${afiliado.tipoDocumento?.tipo || ''} ${afiliado.numeroDocumento || ''}`.trim();
 
       const planMedico = afiliado.Contrato?.plan?.plan;
-
       const nAfiliado = afiliado.Contrato?.nAfiliado;
+      const numeroIntegrante = Number(afiliado.numeroIntegrante || 1);
 
       const nAfiliadoFormateado = nAfiliado
         ? nAfiliado.toString().padStart(7, '0')
         : '0000000';
 
-      const nroAfiliadoCompleto = `${nAfiliadoFormateado}-01`;
+      const nroAfiliadoCompleto = `${nAfiliadoFormateado}-${String(
+        numeroIntegrante
+      ).padStart(2, '0')}`;
 
       const direcciones =
         afiliado.domicilios?.map((domicilio) => {
@@ -34,19 +36,22 @@ export const formatAfiliadosListado = (data) => {
         }) || [];
 
       const emails = afiliado.emails?.map((e) => e.direccion || '');
-
       const telefonos = afiliado.telefonos?.map((t) => t.numero || '');
 
       return {
         id: afiliado.id,
         afiliado: afiliadoNombre,
         nroAfiliado: nroAfiliadoCompleto,
-        documento: documento,
-        planMedico: planMedico,
-        direcciones: direcciones,
-        telefonos: telefonos,
-        emails: emails,
-        url: afiliado.id ? `/afiliados/detalle/${afiliado.id}` : null,
+        documento,
+        planMedico,
+        parentesco:
+          afiliado.parentesco?.relacion || afiliado.parentesco || 'Titular',
+        direcciones,
+        telefonos,
+        emails,
+        url: afiliado.id
+          ? `/administracion/afiliados/detalle/${afiliado.id}`
+          : null,
       };
     });
     return {
