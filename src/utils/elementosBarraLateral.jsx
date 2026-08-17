@@ -4,7 +4,6 @@ import IconoInformacionMedica from '@mui/icons-material/MedicalInformationOutlin
 import IconoCalendario from '@mui/icons-material/CalendarTodayOutlined';
 import IconoListado from '@mui/icons-material/FeedOutlined';
 import IconoAgregar from '@mui/icons-material/AddOutlined';
-import IconoAcceso from '@mui/icons-material/LoginOutlined';
 import IconoReportes from '@mui/icons-material/AssessmentOutlined';
 
 export const elementosBarraLateral = [
@@ -70,11 +69,5 @@ export const elementosBarraLateral = [
         ruta: '/agenda-turnos/alta',
       },
     ],
-  },
-  {
-    clave: 'portales',
-    etiqueta: 'Acceso afiliados / prestadores',
-    icono: <IconoAcceso />,
-    ruta: '/portal/acceso',
   },
 ];
