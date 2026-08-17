@@ -108,9 +108,7 @@ const prestadores = [
     nombre: 'Centro MedIntegral Oeste',
     cuilCuit: '30222222222',
     esCentroMedico: true,
-    especialidades: [
-      { _id: '66c000000000000000000203', nombre: 'Pediatria' },
-    ],
+    especialidades: [{ _id: '66c000000000000000000203', nombre: 'Pediatria' }],
     centrosDeAtencion: [
       {
         direccionId: {
