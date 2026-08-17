@@ -73,7 +73,7 @@ export default function DetalleAgendaTurnos() {
       window.history.replaceState(
         {},
         document.title,
-        `/agenda-turnos/detalle/${id}`
+        `/administracion/agenda-turnos/detalle/${id}`
       );
     }
   }, [location, id]);
