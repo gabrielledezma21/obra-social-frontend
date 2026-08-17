@@ -1,0 +1,55 @@
+name: Aplicar separación de turnos y cartilla
+
+on:
+  push:
+    branches:
+      - agent/integrar-aplicaciones-2-3
+
+permissions:
+  contents: write
+
+jobs:
+  aplicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: agent/integrar-aplicaciones-2-3
+          fetch-depth: 0
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Separar turnos y cartilla
+        run: node scripts/separarTurnosCartilla.cjs
+
+      - name: Aplicar formato
+        run: npm run lint:fix
+
+      - name: Ejecutar pruebas
+        run: npm test
+
+      - name: Validar ESLint
+        run: npm run lint
+
+      - name: Compilar aplicación
+        run: npm run build
+
+      - name: Publicar integración
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/portales/PortalAfiliado.jsx src/components/portales/GestionTurnosAfiliado.jsx src/components/portales/MisTurnosAfiliado.jsx src/components/portales/CartillaMedicaAfiliado.jsx tests/seccionesTurnosCartillaAfiliado.test.js
+          if git diff --cached --quiet; then
+            echo "No hay cambios para publicar"
+            exit 0
+          fi
+          git commit -m "Separar próximos turnos y renovar la cartilla médica"
+          git push origin HEAD:agent/integrar-aplicaciones-2-3
