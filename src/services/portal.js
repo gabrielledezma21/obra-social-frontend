@@ -142,6 +142,10 @@ export const portalPrestador = {
         params: { busqueda },
       })
       .then((respuesta) => respuesta.data),
+  obtenerCatalogoSituaciones: () =>
+    clienteApi
+      .get('/portal-prestador/situaciones-terapeuticas')
+      .then((respuesta) => respuesta.data),
   obtenerSituaciones: (afiliadoId) =>
     clienteApi
       .get(`/portal-prestador/situaciones/${afiliadoId}`)
