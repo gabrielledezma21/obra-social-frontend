@@ -54,7 +54,10 @@ const mismaFecha = (valor, filtro) => {
   const fecha = obtenerFecha(valor);
   const fechaFiltro = obtenerFecha(filtro);
   if (!fecha || !fechaFiltro) return false;
-  return fecha.toISOString().slice(0, 10) === fechaFiltro.toISOString().slice(0, 10);
+
+  const fechaNormalizada = fecha.toISOString().slice(0, 10);
+  const filtroNormalizado = fechaFiltro.toISOString().slice(0, 10);
+  return fechaNormalizada === filtroNormalizado;
 };
 
 const obtenerDireccionesAfiliado = (afiliado) => {
