@@ -26,12 +26,6 @@ export const limpiarSesion = () => {
   localStorage.removeItem(CLAVE_USUARIO);
 };
 
-clienteApi.interceptors.request.use((configuracion) => {
-  const token = localStorage.getItem(CLAVE_TOKEN);
-  if (token) configuracion.headers.Authorization = `Bearer ${token}`;
-  return configuracion;
-});
-
 export const iniciarSesion = async (identificador, contrasena, rol) => {
   const { data: datosRespuesta } = await clienteApi.post(
     '/autenticacion/iniciar-sesion',
