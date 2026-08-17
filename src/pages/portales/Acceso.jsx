@@ -6,13 +6,19 @@ import {
   Card,
   CardContent,
   Divider,
+  Grid,
   Stack,
   Tab,
   Tabs,
   TextField,
   Typography,
 } from '@mui/material';
+import IconoAdministracion from '@mui/icons-material/AdminPanelSettingsOutlined';
+import IconoAfiliado from '@mui/icons-material/PersonOutline';
+import IconoPrestador from '@mui/icons-material/MedicalServicesOutlined';
+import IconoFlecha from '@mui/icons-material/ArrowForward';
 import { useNavigate } from 'react-router-dom';
+import PageHeader from '../../components/common/PageHeader';
 import {
   activarCuentaAfiliado,
   activarCuentaPrestador,
@@ -24,16 +30,19 @@ const OPCIONES_ROL = [
     rol: 'ADMIN',
     titulo: 'Administración',
     descripcion: 'Afiliados, prestadores, agendas y reportes.',
+    icono: IconoAdministracion,
   },
   {
     rol: 'AFILIADO',
     titulo: 'Afiliados',
     descripcion: 'Cartilla médica, turnos y solicitudes.',
+    icono: IconoAfiliado,
   },
   {
     rol: 'PRESTADOR',
     titulo: 'Prestadores',
     descripcion: 'Agendas, próximos turnos e historias clínicas.',
+    icono: IconoPrestador,
   },
 ];
 
@@ -110,38 +119,70 @@ export default function AccesoPortales() {
 
   if (!rolSeleccionado) {
     return (
-      <Box sx={{ maxWidth: 900, mx: 'auto', mt: 6, px: 2 }}>
-        <Stack spacing={3}>
-          <Box textAlign="center">
-            <Typography variant="h3" gutterBottom>
-              MedIntegral
-            </Typography>
-            <Typography color="text.secondary" variant="h6">
-              Elegí cómo querés ingresar
-            </Typography>
-          </Box>
+      <Box sx={{ mt: 2 }}>
+        <PageHeader
+          title="Acceso a MedIntegral"
+          subtitle="Seleccioná el espacio correspondiente para continuar"
+        />
 
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            {OPCIONES_ROL.map((opcion) => (
-              <Card key={opcion.rol} sx={{ flex: 1 }}>
-                <CardContent>
-                  <Stack spacing={2}>
-                    <Typography variant="h5">{opcion.titulo}</Typography>
-                    <Typography color="text.secondary">
+        <Grid container spacing={3}>
+          {OPCIONES_ROL.map((opcion) => {
+            const Icono = opcion.icono;
+            return (
+              <Grid key={opcion.rol} size={{ xs: 12, md: 4 }}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                    '&:hover': {
+                      transform: 'translateY(-3px)',
+                      boxShadow: '0 6px 18px rgba(0,0,0,0.12)',
+                    },
+                  }}
+                >
+                  <CardContent
+                    sx={{
+                      p: 3,
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'primary.main',
+                        color: 'primary.contrastText',
+                        mb: 2,
+                      }}
+                    >
+                      <Icono />
+                    </Box>
+                    <Typography variant="h5" fontWeight={600} gutterBottom>
+                      {opcion.titulo}
+                    </Typography>
+                    <Typography color="text.secondary" sx={{ flexGrow: 1 }}>
                       {opcion.descripcion}
                     </Typography>
                     <Button
                       variant="contained"
+                      endIcon={<IconoFlecha />}
+                      sx={{ mt: 3, alignSelf: 'flex-start' }}
                       onClick={() => seleccionarRol(opcion.rol)}
                     >
-                      Ingresar como {opcion.titulo.toLowerCase()}
+                      Ingresar
                     </Button>
-                  </Stack>
-                </CardContent>
-              </Card>
-            ))}
-          </Stack>
-        </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+            );
+          })}
+        </Grid>
       </Box>
     );
   }
@@ -150,24 +191,46 @@ export default function AccesoPortales() {
     (opcion) => opcion.rol === rolSeleccionado
   );
   const permiteActivacion = rolSeleccionado !== 'ADMIN';
+  const IconoActual = opcionActual.icono;
 
   return (
-    <Box sx={{ maxWidth: 560, mx: 'auto', mt: 6, px: 2 }}>
-      <Card>
-        <CardContent>
-          <Stack component="form" spacing={2} onSubmit={enviarFormulario}>
-            <Button
-              variant="text"
-              sx={{ alignSelf: 'flex-start' }}
-              onClick={() => setRolSeleccionado(null)}
-            >
-              ← Cambiar tipo de acceso
-            </Button>
+    <Box sx={{ maxWidth: 620, mx: 'auto', mt: 2 }}>
+      <Button
+        variant="text"
+        sx={{ mb: 2 }}
+        onClick={() => setRolSeleccionado(null)}
+      >
+        ← Volver a tipos de acceso
+      </Button>
 
-            <Typography variant="h4">{opcionActual.titulo}</Typography>
-            <Typography color="text.secondary">
-              {opcionActual.descripcion}
-            </Typography>
+      <Card>
+        <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+          <Stack component="form" spacing={2.5} onSubmit={enviarFormulario}>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Box
+                sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'primary.main',
+                  color: 'primary.contrastText',
+                  flexShrink: 0,
+                }}
+              >
+                <IconoActual />
+              </Box>
+              <Box>
+                <Typography variant="h4" fontWeight={500}>
+                  {opcionActual.titulo}
+                </Typography>
+                <Typography color="text.secondary">
+                  {opcionActual.descripcion}
+                </Typography>
+              </Box>
+            </Stack>
 
             {permiteActivacion && (
               <Tabs
@@ -197,6 +260,7 @@ export default function AccesoPortales() {
                   onChange={(evento) => setIdentificador(evento.target.value)}
                   required
                   autoComplete="username"
+                  fullWidth
                 />
                 <TextField
                   label="Contraseña"
@@ -205,27 +269,29 @@ export default function AccesoPortales() {
                   onChange={(evento) => setContrasena(evento.target.value)}
                   required
                   autoComplete="current-password"
+                  fullWidth
                   helperText={
                     permiteActivacion
                       ? 'En el primer ingreso, la contraseña temporal es tu DNI.'
                       : ''
                   }
                 />
-                <Button variant="contained" type="submit">
+                <Button variant="contained" type="submit" size="large">
                   Ingresar
                 </Button>
               </>
             ) : (
               <>
                 <Alert severity="info">
-                  Para activar tu cuenta, el DNI y el email deben coincidir con
-                  los datos cargados previamente por Administración.
+                  El DNI y el email deben coincidir con los datos cargados por
+                  Administración.
                 </Alert>
                 <TextField
                   label="DNI"
                   value={dni}
                   onChange={(evento) => setDni(evento.target.value)}
                   required
+                  fullWidth
                   inputProps={{ inputMode: 'numeric' }}
                 />
                 <TextField
@@ -234,8 +300,9 @@ export default function AccesoPortales() {
                   value={email}
                   onChange={(evento) => setEmail(evento.target.value)}
                   required
+                  fullWidth
                 />
-                <Button variant="contained" type="submit">
+                <Button variant="contained" type="submit" size="large">
                   Activar cuenta
                 </Button>
               </>
