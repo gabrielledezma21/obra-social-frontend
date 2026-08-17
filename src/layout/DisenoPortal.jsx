@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
 import {
   Alert,
   AppBar,
@@ -133,6 +134,12 @@ function TarjetaMetrica({ titulo, valor, principal = false }) {
     </Card>
   );
 }
+
+TarjetaMetrica.propTypes = {
+  titulo: PropTypes.string.isRequired,
+  valor: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  principal: PropTypes.bool,
+};
 
 function DashboardAfiliado({ datos, seleccionarElemento }) {
   const turnosProximos = useMemo(
@@ -291,6 +298,11 @@ function DashboardAfiliado({ datos, seleccionarElemento }) {
   );
 }
 
+DashboardAfiliado.propTypes = {
+  datos: PropTypes.object.isRequired,
+  seleccionarElemento: PropTypes.func.isRequired,
+};
+
 function DashboardPrestador({ datos, seleccionarElemento }) {
   const turnosProximos = useMemo(
     () =>
@@ -444,6 +456,11 @@ function DashboardPrestador({ datos, seleccionarElemento }) {
     </Stack>
   );
 }
+
+DashboardPrestador.propTypes = {
+  datos: PropTypes.object.isRequired,
+  seleccionarElemento: PropTypes.func.isRequired,
+};
 
 export default function DisenoPortal() {
   const tema = useTheme();
