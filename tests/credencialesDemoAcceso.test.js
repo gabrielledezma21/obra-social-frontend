@@ -1,10 +1,9 @@
-const fs = require('node:fs');
-const path = require('node:path');
-const test = require('node:test');
-const assert = require('node:assert/strict');
+import fs from 'node:fs';
+import test from 'node:test';
+import assert from 'node:assert/strict';
 
 const leerArchivo = (rutaRelativa) =>
-  fs.readFileSync(path.join(process.cwd(), rutaRelativa), 'utf8');
+  fs.readFileSync(new URL(`../${rutaRelativa}`, import.meta.url), 'utf8');
 
 test('muestra las credenciales demo correspondientes a cada rol', () => {
   const acceso = leerArchivo('src/pages/portales/Acceso.jsx');

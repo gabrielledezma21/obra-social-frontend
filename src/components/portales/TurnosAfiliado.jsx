@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Alert,
@@ -59,6 +59,30 @@ export default function TurnosAfiliado({
 }) {
   const [modo, setModo] = useState('listado');
   const [pestanaTurnos, setPestanaTurnos] = useState(0);
+
+  useEffect(() => {
+    const manejarNavegacionTurnos = (evento) => {
+      if (evento.detail?.vista === 'sacar') {
+        setModo('sacar');
+        return;
+      }
+
+      if (evento.detail?.vista === 'listado') {
+        setModo('listado');
+        setPestanaTurnos(0);
+      }
+    };
+
+    window.addEventListener(
+      'medintegral:navegar-turnos',
+      manejarNavegacionTurnos
+    );
+    return () =>
+      window.removeEventListener(
+        'medintegral:navegar-turnos',
+        manejarNavegacionTurnos
+      );
+  }, []);
   const { proximos, anteriores } = separarTurnosAfiliado(turnos);
   const turnosVisibles = pestanaTurnos === 0 ? proximos : anteriores;
 
