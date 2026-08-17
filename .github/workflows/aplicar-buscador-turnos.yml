@@ -1,0 +1,130 @@
+name: Aplicar buscador de turnos
+
+on:
+  push:
+    branches:
+      - agent/integrar-aplicaciones-2-3
+
+permissions:
+  contents: write
+
+jobs:
+  aplicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: agent/integrar-aplicaciones-2-3
+          fetch-depth: 0
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Integrar buscador avanzado
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const ruta = 'src/pages/portales/PortalAfiliado.jsx';
+          let contenido = fs.readFileSync(ruta, 'utf8');
+
+          const importacion = "import GestionTurnosAfiliado from '../../components/portales/GestionTurnosAfiliado';";
+          if (!contenido.includes(importacion)) {
+            contenido = contenido.replace(
+              "import PropTypes from 'prop-types';",
+              "import PropTypes from 'prop-types';\n" + importacion
+            );
+          }
+
+          const inicioFuncion = contenido.indexOf('  const buscarDisponibilidad = async () => {');
+          const finFuncion = contenido.indexOf('\n  const reservarTurno = async', inicioFuncion);
+          if (inicioFuncion < 0 || finFuncion < 0) {
+            throw new Error('No se encontró la función buscarDisponibilidad esperada.');
+          }
+
+          const nuevaFuncion = `  const buscarDisponibilidad = async (filtros = {}) => {
+            if (!fechaTurno) {
+              setError('Elegí una fecha para buscar turnos.');
+              return null;
+            }
+
+            try {
+              setError('');
+              const horarios = await portalAfiliado.obtenerDisponibilidad(
+                fechaTurno,
+                filtros
+              );
+              setHorariosDisponibles(horarios);
+              return horarios;
+            } catch (errorPeticion) {
+              setError(obtenerMensajeError(errorPeticion));
+              return null;
+            }
+          };
+`;
+          contenido =
+            contenido.slice(0, inicioFuncion) +
+            nuevaFuncion +
+            contenido.slice(finFuncion + 1);
+
+          const inicioTurnos = contenido.indexOf('      {pestana === 2 && (');
+          const inicioCartilla = contenido.indexOf('      {pestana === 3 && (');
+          if (inicioTurnos < 0 || inicioCartilla < 0 || inicioCartilla <= inicioTurnos) {
+            throw new Error('No se encontró el bloque de Turnos esperado.');
+          }
+
+          const nuevoBloqueTurnos = `      {pestana === 2 && (
+            <GestionTurnosAfiliado
+              integrantes={integrantes}
+              cartilla={cartilla}
+              fechaTurno={fechaTurno}
+              setFechaTurno={setFechaTurno}
+              afiliadoTurnoId={afiliadoTurnoId}
+              setAfiliadoTurnoId={setAfiliadoTurnoId}
+              horariosDisponibles={horariosDisponibles}
+              buscarDisponibilidad={buscarDisponibilidad}
+              reservarTurno={reservarTurno}
+              turnos={turnos}
+              cancelarTurno={cancelarTurno}
+            />
+          )}
+
+`;
+
+          contenido =
+            contenido.slice(0, inicioTurnos) +
+            nuevoBloqueTurnos +
+            contenido.slice(inicioCartilla);
+
+          fs.writeFileSync(ruta, contenido);
+          NODE
+
+      - name: Aplicar formato del proyecto
+        run: npm run lint:fix
+
+      - name: Ejecutar pruebas
+        run: npm test
+
+      - name: Validar ESLint
+        run: npm run lint
+
+      - name: Compilar aplicación
+        run: npm run build
+
+      - name: Publicar integración
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/portales/PortalAfiliado.jsx src/components/portales/GestionTurnosAfiliado.jsx
+          if git diff --cached --quiet; then
+            echo "No hay cambios para publicar"
+            exit 0
+          fi
+          git commit -m "Integrar búsqueda avanzada de turnos del afiliado"
+          git push origin HEAD:agent/integrar-aplicaciones-2-3
