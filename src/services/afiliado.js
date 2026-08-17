@@ -75,9 +75,7 @@ const obtenerListado = async (
     (elemento) => elemento.credencial ?? elemento.Contrato?.nAfiliado,
   ]);
 
-  return formatearListadoAfiliados(
-    paginar(afiliadosFiltrados, pagina, limite)
-  );
+  return formatearListadoAfiliados(paginar(afiliadosFiltrados, pagina, limite));
 };
 
 // Esta API pública pertenece al frontend original y se conserva únicamente
