@@ -1,24 +1,25 @@
 import { Drawer, Toolbar, List, IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import SidebarItem from './SidebarItem';
+import IconoCerrar from '@mui/icons-material/Close';
+import ElementoBarraLateral from './SidebarItem';
 import PropTypes from 'prop-types';
-import { sidebarItems } from '../../../utils/sidebarItems';
-import BrandLogo from '../BrandLogo';
-export default function SidebarModal({ open, onClose }) {
+import { elementosBarraLateral } from '../../../utils/elementosBarraLateral';
+import LogoMarca from '../BrandLogo';
+
+export default function ModalBarraLateral({ abierto, alCerrar }) {
   return (
     <Drawer
       anchor="left"
-      open={open}
-      onClose={onClose}
+      open={abierto}
+      onClose={alCerrar}
       ModalProps={{ keepMounted: true }}
       sx={{
-        zIndex: (theme) => theme.zIndex.drawer + 2,
+        zIndex: (tema) => tema.zIndex.drawer + 2,
         '& .MuiDrawer-paper': {
           width: 300,
           backgroundColor: '#0b111e',
           color: '#fff',
           borderRight: 'none',
-          zIndex: (theme) => theme.zIndex.drawer + 2,
+          zIndex: (tema) => tema.zIndex.drawer + 2,
         },
       }}
     >
@@ -29,21 +30,21 @@ export default function SidebarModal({ open, onClose }) {
           px: 2,
         }}
       >
-        <BrandLogo clickable size="medium" />{' '}
-        <IconButton onClick={onClose} color="inherit">
-          <CloseIcon />
+        <LogoMarca clickable size="medium" />{' '}
+        <IconButton onClick={alCerrar} color="inherit">
+          <IconoCerrar />
         </IconButton>
       </Toolbar>
 
       <List className="sidebar-list">
-        {sidebarItems.map((item, index) => (
-          <SidebarItem
-            key={index}
-            item={item}
-            open={true}
+        {elementosBarraLateral.map((elemento, indice) => (
+          <ElementoBarraLateral
+            key={indice}
+            elemento={elemento}
+            abierto={true}
             esMobile={true}
             abrirMenu={() => {}}
-            collapsed={false}
+            colapsado={false}
           />
         ))}
       </List>
@@ -51,7 +52,7 @@ export default function SidebarModal({ open, onClose }) {
   );
 }
 
-SidebarModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
+ModalBarraLateral.propTypes = {
+  abierto: PropTypes.bool.isRequired,
+  alCerrar: PropTypes.func.isRequired,
 };

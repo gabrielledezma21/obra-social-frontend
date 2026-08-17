@@ -1,56 +1,53 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './layout/layoutBase';
-
-import Home from './pages/Home';
-
-import AgendaListado from './pages/agenda-turnos/Listado';
-import AgendaAlta from './pages/agenda-turnos/Alta';
-import AgendaDetalle from './pages/agenda-turnos/Detalle';
-
-import PrestadoresListado from './pages/prestadores/Listado';
-import PrestadoresAlta from './pages/prestadores/Alta';
-import PrestadoresDetalle from './pages/prestadores/Detalle';
-
-import AfiliadosListado from './pages/afiliados/Listado';
-import AfiliadosAlta from './pages/afiliados/Alta';
-import AfiliadosDetalle from './pages/afiliados/Detalle';
-
-import Forbidden from './pages/403/Forbidden';
-
-import NotFound from './pages/404/404';
-
+import DisenoBase from './layout/layoutBase';
+import Inicio from './pages/Home';
+import Reportes from './pages/Reportes';
+import ListadoAgendas from './pages/agenda-turnos/Listado';
+import AltaAgenda from './pages/agenda-turnos/Alta';
+import DetalleAgenda from './pages/agenda-turnos/Detalle';
+import ListadoPrestadores from './pages/prestadores/Listado';
+import AltaPrestador from './pages/prestadores/Alta';
+import DetallePrestador from './pages/prestadores/Detalle';
+import ListadoAfiliados from './pages/afiliados/Listado';
+import AltaAfiliado from './pages/afiliados/Alta';
+import DetalleAfiliado from './pages/afiliados/Detalle';
+import AccesoPortales from './pages/portales/Acceso';
+import PortalAfiliado from './pages/portales/PortalAfiliado';
+import PortalPrestador from './pages/portales/PortalPrestador';
+import AccesoProhibido from './pages/403/Forbidden';
+import PaginaNoEncontrada from './pages/404/404';
 import './App.css';
 
-function App() {
+function Aplicacion() {
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
-
+      <Route path="/" element={<DisenoBase />}>
+        <Route index element={<Inicio />} />
+        <Route path="reportes" element={<Reportes />} />
         <Route path="agenda-turnos">
-          <Route path="listado" element={<AgendaListado />} />
-          <Route path="alta" element={<AgendaAlta />} />
-          <Route path="detalle/:id" element={<AgendaDetalle />} />
+          <Route path="listado" element={<ListadoAgendas />} />
+          <Route path="alta" element={<AltaAgenda />} />
+          <Route path="detalle/:id" element={<DetalleAgenda />} />
         </Route>
-
         <Route path="prestadores">
-          <Route path="listado" element={<PrestadoresListado />} />
-          <Route path="alta" element={<PrestadoresAlta />} />
-          <Route path="detalle/:id" element={<PrestadoresDetalle />} />
+          <Route path="listado" element={<ListadoPrestadores />} />
+          <Route path="alta" element={<AltaPrestador />} />
+          <Route path="detalle/:id" element={<DetallePrestador />} />
         </Route>
-
         <Route path="afiliados">
-          <Route path="listado" element={<AfiliadosListado />} />
-          <Route path="alta" element={<AfiliadosAlta />} />
-          <Route path="detalle/:id" element={<AfiliadosDetalle />} />
+          <Route path="listado" element={<ListadoAfiliados />} />
+          <Route path="alta" element={<AltaAfiliado />} />
+          <Route path="detalle/:id" element={<DetalleAfiliado />} />
         </Route>
-
-        <Route path="/403" element={<Forbidden />} />
-        <Route path="404" element={<NotFound />} />
+        <Route path="portal/acceso" element={<AccesoPortales />} />
+        <Route path="portal/afiliado" element={<PortalAfiliado />} />
+        <Route path="portal/prestador" element={<PortalPrestador />} />
+        <Route path="403" element={<AccesoProhibido />} />
+        <Route path="404" element={<PaginaNoEncontrada />} />
       </Route>
       <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>
   );
 }
 
-export default App;
+export default Aplicacion;

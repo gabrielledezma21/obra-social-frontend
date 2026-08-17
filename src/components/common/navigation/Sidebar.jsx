@@ -7,47 +7,46 @@ import {
   MenuItem,
 } from '@mui/material';
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
-import { sidebarItems } from '../../../utils/sidebarItems';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
-import SidebarItem from './SidebarItem';
+import { useEffect, useState } from 'react';
+import { elementosBarraLateral } from '../../../utils/elementosBarraLateral';
+import { Link as EnlaceRouter, useLocation } from 'react-router-dom';
+import ElementoBarraLateral from './SidebarItem';
 import './Sidebar.css';
 
-const drawerWidth = 280;
+const ANCHO_BARRA = 280;
 
-export default function Sidebar({ open, toggleOpen }) {
+export default function BarraLateral({ abierto, cambiarApertura }) {
   const [anclaMenu, setAnclaMenu] = useState(null);
-  const [menuItems, setMenuItems] = useState([]);
-  const location = useLocation();
+  const [elementosMenu, setElementosMenu] = useState([]);
+  const ubicacion = useLocation();
 
-  // 🔹 Cierra menú contextual al cambiar de ruta
   useEffect(() => {
     setAnclaMenu(null);
-    setMenuItems([]);
-  }, [location.pathname]);
+    setElementosMenu([]);
+  }, [ubicacion.pathname]);
 
-  const drawerWidthActual = open ? drawerWidth : 70;
+  const anchoActual = abierto ? ANCHO_BARRA : 70;
 
-  const abrirMenu = (event, items) => {
-    setAnclaMenu(event.currentTarget);
-    setMenuItems(items);
+  const abrirMenu = (evento, elementos) => {
+    setAnclaMenu(evento.currentTarget);
+    setElementosMenu(elementos);
   };
 
   const cerrarMenu = () => {
     setAnclaMenu(null);
-    setMenuItems([]);
+    setElementosMenu([]);
   };
 
   return (
     <>
       <Drawer
         variant="permanent"
-        open={open}
+        open={abierto}
         sx={{
-          width: drawerWidthActual,
+          width: anchoActual,
           flexShrink: 0,
           '& .MuiDrawer-paper': {
-            width: drawerWidthActual,
+            width: anchoActual,
             backgroundColor: '#0b111e',
             color: '#fff',
             borderRight: 'none',
@@ -58,13 +57,13 @@ export default function Sidebar({ open, toggleOpen }) {
         }}
       >
         <List className="sidebar-list">
-          {sidebarItems.map((item) => (
-            <SidebarItem
-              key={item.key}
-              item={item}
-              open={open}
+          {elementosBarraLateral.map((elemento) => (
+            <ElementoBarraLateral
+              key={elemento.clave}
+              elemento={elemento}
+              abierto={abierto}
               abrirMenu={abrirMenu}
-              collapsed={!open}
+              colapsado={!abierto}
               esMobile={false}
             />
           ))}
@@ -86,18 +85,20 @@ export default function Sidebar({ open, toggleOpen }) {
           },
         }}
       >
-        {menuItems.map((item, idx) => (
+        {elementosMenu.map((elemento, indice) => (
           <MenuItem
-            key={idx}
-            component={RouterLink}
-            to={item.route}
+            key={indice}
+            component={EnlaceRouter}
+            to={elemento.ruta}
             onClick={() => {
               cerrarMenu();
-              toggleOpen(false);
+              cambiarApertura(false);
             }}
           >
-            <ListItemIcon sx={{ color: '#fff' }}>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.label} />
+            <ListItemIcon sx={{ color: '#fff' }}>
+              {elemento.icono}
+            </ListItemIcon>
+            <ListItemText primary={elemento.etiqueta} />
           </MenuItem>
         ))}
       </Menu>
@@ -105,7 +106,7 @@ export default function Sidebar({ open, toggleOpen }) {
   );
 }
 
-Sidebar.propTypes = {
-  open: PropTypes.bool.isRequired,
-  toggleOpen: PropTypes.func.isRequired,
+BarraLateral.propTypes = {
+  abierto: PropTypes.bool.isRequired,
+  cambiarApertura: PropTypes.func.isRequired,
 };
