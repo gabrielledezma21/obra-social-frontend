@@ -17,8 +17,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { limpiarSesion, portalAfiliado } from '../../services/portal';
 import PropTypes from 'prop-types';
-import GestionTurnosAfiliado from '../../components/portales/GestionTurnosAfiliado';
-import MisTurnosAfiliado from '../../components/portales/MisTurnosAfiliado';
+import TurnosAfiliado from '../../components/portales/TurnosAfiliado';
 import CartillaMedicaAfiliado from '../../components/portales/CartillaMedicaAfiliado';
 
 const FORMULARIO_VACIO = {
@@ -280,9 +279,10 @@ export default function PortalAfiliado() {
         )
       );
       await cargarDatos();
-      setPestana(2);
+      return true;
     } catch (errorPeticion) {
       setError(obtenerMensajeError(errorPeticion));
+      return false;
     }
   };
 
@@ -364,8 +364,7 @@ export default function PortalAfiliado() {
           label={solicitudEditandoId ? 'Editar solicitud' : 'Nueva solicitud'}
         />
         <Tab label="Solicitudes" />
-        <Tab label="Mis próximos turnos" />
-        <Tab label="Sacar turno" />
+        <Tab label="Turnos" />
         <Tab label="Cartilla médica" />
       </Tabs>
 
@@ -680,11 +679,8 @@ export default function PortalAfiliado() {
       )}
 
       {pestana === 2 && (
-        <MisTurnosAfiliado turnos={turnos} cancelarTurno={cancelarTurno} />
-      )}
-
-      {pestana === 3 && (
-        <GestionTurnosAfiliado
+        <TurnosAfiliado
+          turnos={turnos}
           integrantes={integrantes}
           cartilla={cartilla}
           afiliadoTurnoId={afiliadoTurnoId}
@@ -692,10 +688,11 @@ export default function PortalAfiliado() {
           horariosDisponibles={horariosDisponibles}
           buscarDisponibilidad={buscarDisponibilidad}
           reservarTurno={reservarTurno}
+          cancelarTurno={cancelarTurno}
         />
       )}
 
-      {pestana === 4 && <CartillaMedicaAfiliado cartilla={cartilla} />}
+      {pestana === 3 && <CartillaMedicaAfiliado cartilla={cartilla} />}
     </Stack>
   );
 }

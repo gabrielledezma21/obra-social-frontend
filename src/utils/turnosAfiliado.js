@@ -1,6 +1,7 @@
 const DESPLAZAMIENTO_ARGENTINA = '-03:00';
 
-export const obtenerFechaTextoTurno = (valor) => String(valor || '').slice(0, 10);
+export const obtenerFechaTextoTurno = (valor) =>
+  String(valor || '').slice(0, 10);
 
 export const obtenerMomentoTurno = (turno) => {
   const fecha = obtenerFechaTextoTurno(turno?.fecha);
