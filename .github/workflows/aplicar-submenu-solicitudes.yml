@@ -1,0 +1,39 @@
+name: Aplicar submenú de solicitudes
+
+on:
+  push:
+    branches:
+      - feat/menu-turnos-afiliado
+
+permissions:
+  contents: write
+
+jobs:
+  aplicar:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/menu-turnos-afiliado
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: node scripts/aplicarSubmenuSolicitudes.cjs
+      - run: npx prettier --write src/layout/DisenoPortal.jsx tests/menuTurnosAfiliado.test.js
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build
+
+      - name: Publicar cambios
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/layout/DisenoPortal.jsx tests/menuTurnosAfiliado.test.js
+          git commit -m "feat: organizar solicitudes del afiliado en submenú"
+          git push origin HEAD:feat/menu-turnos-afiliado
