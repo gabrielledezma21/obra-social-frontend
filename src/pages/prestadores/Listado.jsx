@@ -24,7 +24,11 @@ export default function PrestadoresListado() {
     const params = new URLSearchParams(location.search);
     if (params.get('deleted') === 'true') {
       setShowSuccess(true);
-      window.history.replaceState({}, document.title, '/prestadores');
+      window.history.replaceState(
+        {},
+        document.title,
+        '/administracion/prestadores/listado'
+      );
     }
   }, [location]);
 
