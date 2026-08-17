@@ -22,19 +22,19 @@ const headerConfig = {
   'agenda-de-turnos': {
     title: 'Agendas de turnos',
     placeholder: 'Buscar por prestador, especialidad...',
-    addLink: '/agenda-turnos/alta',
+    addLink: '/administracion/agenda-turnos/alta',
     labels: { singular: 'agenda de turnos', plural: 'agendas de turnos' },
   },
   prestador: {
     title: 'Prestadores',
     placeholder: 'Buscar por nombre, código postal, CUIT/CUIL...',
-    addLink: '/prestadores/alta',
+    addLink: '/administracion/prestadores/alta',
     labels: { singular: 'prestador', plural: 'prestadores' },
   },
   afiliado: {
     title: 'Afiliados',
     placeholder: 'Buscar por nombre, apellido o DNI...',
-    addLink: '/afiliados/alta',
+    addLink: '/administracion/afiliados/alta',
     labels: { singular: 'afiliado', plural: 'afiliados' },
   },
 };
