@@ -11,7 +11,9 @@ const contiene = (valor, buscado) =>
 
 const obtenerFecha = (valor) => {
   if (!valor) return null;
-  if (valor instanceof Date) return Number.isNaN(valor.getTime()) ? null : valor;
+  if (valor instanceof Date) {
+    return Number.isNaN(valor.getTime()) ? null : valor;
+  }
 
   const texto = String(valor);
   const fecha = /^\d{4}-\d{2}-\d{2}$/.test(texto)
@@ -52,7 +54,10 @@ const mismaFecha = (valor, filtro) => {
   const fecha = obtenerFecha(valor);
   const fechaFiltro = obtenerFecha(filtro);
   if (!fecha || !fechaFiltro) return false;
-  return fecha.toISOString().slice(0, 10) === fechaFiltro.toISOString().slice(0, 10);
+  return (
+    fecha.toISOString().slice(0, 10) ===
+    fechaFiltro.toISOString().slice(0, 10)
+  );
 };
 
 const obtenerDireccionesAfiliado = (afiliado) => {
@@ -64,7 +69,9 @@ const obtenerDireccionesAfiliado = (afiliado) => {
   return direcciones.filter(
     (direccion, indice) =>
       direcciones.findIndex(
-        (otra) => String(otra?._id ?? otra?.id) === String(direccion?._id ?? direccion?.id)
+        (otra) =>
+          String(otra?._id ?? otra?.id) ===
+          String(direccion?._id ?? direccion?.id)
       ) === indice
   );
 };
@@ -90,7 +97,11 @@ const normalizarTipoDocumento = (valor) => {
   return equivalencias[normalizado] ?? normalizado;
 };
 
-export const filtrarAfiliados = (afiliados = [], filtros = {}, ahora = new Date()) => {
+export const filtrarAfiliados = (
+  afiliados = [],
+  filtros = {},
+  ahora = new Date()
+) => {
   const texto = normalizarTexto(filtros.textInputSearch);
   const estado = String(obtenerValorFiltro(filtros.estado));
   const nroAfiliado = normalizarTexto(filtros.nroAfiliado);
@@ -117,7 +128,11 @@ export const filtrarAfiliados = (afiliados = [], filtros = {}, ahora = new Date(
     const fechaAlta = obtenerFecha(afiliado?.fechaAlta);
     const fechaBaja = obtenerFecha(afiliado?.fechaBaja);
     if (estado === 'Vigentes') {
-      if (!fechaAlta || fechaAlta > ahora || (fechaBaja && fechaBaja <= ahora)) {
+      if (
+        !fechaAlta ||
+        fechaAlta > ahora ||
+        (fechaBaja && fechaBaja <= ahora)
+      ) {
         return false;
       }
     } else if (estado === 'Bajas') {
@@ -146,13 +161,17 @@ export const filtrarAfiliados = (afiliados = [], filtros = {}, ahora = new Date(
     const direcciones = obtenerDireccionesAfiliado(afiliado);
     if (
       provincia &&
-      !direcciones.some((direccion) => contiene(direccion?.provincia, provincia))
+      !direcciones.some((direccion) =>
+        contiene(direccion?.provincia, provincia)
+      )
     ) {
       return false;
     }
     if (
       localidad &&
-      !direcciones.some((direccion) => contiene(direccion?.localidad, localidad))
+      !direcciones.some((direccion) =>
+        contiene(direccion?.localidad, localidad)
+      )
     ) {
       return false;
     }
@@ -183,7 +202,9 @@ export const filtrarAfiliados = (afiliados = [], filtros = {}, ahora = new Date(
 
     if (
       telefono &&
-      !(afiliado?.telefonos ?? []).some((item) => contiene(item?.numero, telefono))
+      !(afiliado?.telefonos ?? []).some((item) =>
+        contiene(item?.numero, telefono)
+      )
     ) {
       return false;
     }
@@ -204,7 +225,9 @@ export const filtrarPrestadores = (prestadores = [], filtros = {}) => {
   const tipoPrestador = obtenerValorFiltro(filtros.tipoPrestador);
   const especialidad = filtros.especialidad;
   const idEspecialidad = String(especialidad?.value ?? especialidad?.id ?? '');
-  const nombreEspecialidad = normalizarTexto(especialidad?.label ?? especialidad?.nombre);
+  const nombreEspecialidad = normalizarTexto(
+    especialidad?.label ?? especialidad?.nombre
+  );
   const provincia = normalizarTexto(obtenerValorFiltro(filtros.provincia));
   const localidad = normalizarTexto(obtenerValorFiltro(filtros.localidad));
 
@@ -224,7 +247,11 @@ export const filtrarPrestadores = (prestadores = [], filtros = {}) => {
       return false;
     }
 
-    if (tipoPrestador !== '' && tipoPrestador !== null && tipoPrestador !== undefined) {
+    if (
+      tipoPrestador !== '' &&
+      tipoPrestador !== null &&
+      tipoPrestador !== undefined
+    ) {
       const esperado = String(tipoPrestador) === 'true';
       if (Boolean(prestador?.esCentroMedico) !== esperado) return false;
     }
@@ -243,14 +270,18 @@ export const filtrarPrestadores = (prestadores = [], filtros = {}) => {
 
     if (
       provincia &&
-      !direcciones.some((direccion) => contiene(direccion?.provincia, provincia))
+      !direcciones.some((direccion) =>
+        contiene(direccion?.provincia, provincia)
+      )
     ) {
       return false;
     }
 
     if (
       localidad &&
-      !direcciones.some((direccion) => contiene(direccion?.localidad, localidad))
+      !direcciones.some((direccion) =>
+        contiene(direccion?.localidad, localidad)
+      )
     ) {
       return false;
     }
@@ -259,7 +290,9 @@ export const filtrarPrestadores = (prestadores = [], filtros = {}) => {
       prestador?.creadoEn ??
       prestador?.createdAt ??
       obtenerFechaDesdeId(prestador?._id ?? prestador?.id);
-    if (!estaEnRango(fechaCreacion, filtros.creacionDesde, filtros.creacionHasta)) {
+    if (
+      !estaEnRango(fechaCreacion, filtros.creacionDesde, filtros.creacionHasta)
+    ) {
       return false;
     }
 
