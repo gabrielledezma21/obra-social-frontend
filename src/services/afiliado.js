@@ -2,11 +2,11 @@ import clienteApi from './api';
 import { formatAfiliadosListado as formatearListadoAfiliados } from '../utils/formats/afiliadoListado';
 import {
   afiliadoToLegacy as adaptarAfiliadoLegado,
-  filterByText as filtrarPorTexto,
   getId as obtenerId,
   paginate as paginar,
   provinceName as obtenerNombreProvincia,
 } from './apiAdapters';
+import { filtrarAfiliados } from '../utils/filtrosListados';
 
 const convertirAFecha = (valor) =>
   valor?.format?.('YYYY-MM-DD') ?? valor ?? null;
@@ -66,14 +66,12 @@ const obtenerListado = async (
   soloTitulares = false
 ) => {
   const { data: datos } = await clienteApi.get('/afiliados');
-  const afiliadosLegados = (Array.isArray(datos) ? datos : [])
-    .filter((elemento) => !soloTitulares || elemento.parentesco === 'Titular')
-    .map(adaptarAfiliadoLegado);
-  const afiliadosFiltrados = filtrarPorTexto(afiliadosLegados, filtros, [
-    (elemento) => `${elemento.nombre} ${elemento.apellido}`,
-    (elemento) => elemento.numeroDocumento,
-    (elemento) => elemento.credencial ?? elemento.Contrato?.nAfiliado,
-  ]);
+  const afiliadosCrudos = (Array.isArray(datos) ? datos : []).filter(
+    (elemento) => !soloTitulares || elemento.parentesco === 'Titular'
+  );
+  const afiliadosFiltrados = filtrarAfiliados(afiliadosCrudos, filtros).map(
+    adaptarAfiliadoLegado
+  );
 
   return formatearListadoAfiliados(paginar(afiliadosFiltrados, pagina, limite));
 };
