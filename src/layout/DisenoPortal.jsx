@@ -116,66 +116,69 @@ export default function DisenoPortal() {
   };
 
   const contenidoBarra = (abierta) => (
-    <>
-      <List sx={{ px: 1, pt: 1.5, flexGrow: 1 }}>
-        {elementos.map((elemento) => {
-          const Icono = elemento.icono;
-          const seleccionado = elementoActivo === elemento.clave;
+    <List sx={{ px: 0.75, pt: 1, flexGrow: 1 }}>
+      {elementos.map((elemento) => {
+        const Icono = elemento.icono;
+        const seleccionado = elementoActivo === elemento.clave;
 
-          const boton = (
-            <ListItemButton
-              key={elemento.clave}
-              selected={seleccionado}
-              onClick={() => seleccionarElemento(elemento)}
+        const boton = (
+          <ListItemButton
+            key={elemento.clave}
+            selected={seleccionado}
+            onClick={() => seleccionarElemento(elemento)}
+            sx={{
+              minHeight: 44,
+              mb: 0.25,
+              px: abierta ? 1.5 : 1,
+              py: 0.5,
+              borderRadius: 1.5,
+              justifyContent: abierta ? 'initial' : 'center',
+              color: seleccionado ? '#fff' : 'rgba(255,255,255,0.86)',
+              backgroundColor: seleccionado
+                ? 'rgba(0,177,234,0.18)'
+                : 'transparent',
+              '&.Mui-selected': {
+                backgroundColor: 'rgba(0,177,234,0.18)',
+              },
+              '&.Mui-selected:hover, &:hover': {
+                backgroundColor: 'rgba(0,177,234,0.26)',
+              },
+            }}
+          >
+            <ListItemIcon
               sx={{
-                minHeight: 56,
-                mb: 0.75,
-                px: abierta ? 2 : 1.5,
-                borderRadius: 2,
-                justifyContent: abierta ? 'initial' : 'center',
-                color: seleccionado ? '#fff' : 'rgba(255,255,255,0.86)',
-                backgroundColor: seleccionado
-                  ? 'rgba(0,177,234,0.18)'
-                  : 'transparent',
-                '&.Mui-selected': {
-                  backgroundColor: 'rgba(0,177,234,0.18)',
-                },
-                '&.Mui-selected:hover, &:hover': {
-                  backgroundColor: 'rgba(0,177,234,0.26)',
+                minWidth: abierta ? 36 : 0,
+                color: seleccionado ? COLOR_PRINCIPAL : '#fff',
+                justifyContent: 'center',
+                '& .MuiSvgIcon-root': {
+                  fontSize: 22,
                 },
               }}
             >
-              <ListItemIcon
-                sx={{
-                  minWidth: abierta ? 44 : 0,
-                  color: seleccionado ? COLOR_PRINCIPAL : '#fff',
-                  justifyContent: 'center',
+              <Icono />
+            </ListItemIcon>
+            {abierta && (
+              <ListItemText
+                primary={elemento.etiqueta}
+                primaryTypographyProps={{
+                  fontSize: 15,
+                  lineHeight: 1.2,
+                  fontWeight: seleccionado ? 600 : 500,
                 }}
-              >
-                <Icono />
-              </ListItemIcon>
-              {abierta && (
-                <ListItemText
-                  primary={elemento.etiqueta}
-                  primaryTypographyProps={{
-                    fontSize: 16,
-                    fontWeight: seleccionado ? 600 : 500,
-                  }}
-                />
-              )}
-            </ListItemButton>
-          );
+              />
+            )}
+          </ListItemButton>
+        );
 
-          return abierta ? (
-            boton
-          ) : (
-            <Tooltip key={elemento.clave} title={elemento.etiqueta} placement="right">
-              {boton}
-            </Tooltip>
-          );
-        })}
-      </List>
-    </>
+        return abierta ? (
+          boton
+        ) : (
+          <Tooltip key={elemento.clave} title={elemento.etiqueta} placement="right">
+            {boton}
+          </Tooltip>
+        );
+      })}
+    </List>
   );
 
   return (
