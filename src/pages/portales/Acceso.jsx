@@ -46,6 +46,21 @@ const OPCIONES_ROL = [
   },
 ];
 
+const CREDENCIALES_DEMO = {
+  ADMIN: {
+    usuario: 'admin@medintegral.com',
+    contrasena: 'Admin1234',
+  },
+  AFILIADO: {
+    usuario: 'homero@simpson.com',
+    contrasena: 'Demo1234',
+  },
+  PRESTADOR: {
+    usuario: 'house@medical.com',
+    contrasena: 'Demo1234',
+  },
+};
+
 const obtenerRutaRol = (rol) => {
   if (rol === 'ADMIN') return '/administracion';
   if (rol === 'PRESTADOR') return '/portal/prestador';
@@ -192,6 +207,7 @@ export default function AccesoPortales() {
   );
   const permiteActivacion = rolSeleccionado !== 'ADMIN';
   const IconoActual = opcionActual.icono;
+  const credencialesActuales = CREDENCIALES_DEMO[rolSeleccionado];
 
   return (
     <Box sx={{ maxWidth: 620, mx: 'auto', mt: 2 }}>
@@ -252,6 +268,18 @@ export default function AccesoPortales() {
 
             {pestana === 0 ? (
               <>
+                <Alert severity="info" variant="outlined">
+                  <Typography fontWeight={600} sx={{ mb: 0.5 }}>
+                    Credenciales de demostración
+                  </Typography>
+                  <Typography variant="body2">
+                    Usuario: <strong>{credencialesActuales.usuario}</strong>
+                  </Typography>
+                  <Typography variant="body2">
+                    Contraseña:{' '}
+                    <strong>{credencialesActuales.contrasena}</strong>
+                  </Typography>
+                </Alert>
                 <TextField
                   label={rolSeleccionado === 'ADMIN' ? 'Email' : 'DNI o email'}
                   value={identificador}
