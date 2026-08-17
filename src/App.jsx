@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectorRuta from './components/autenticacion/ProtectorRuta';
+import RutaInicial from './components/autenticacion/RutaInicial';
 import DisenoBase from './layout/layoutBase';
 import DisenoPortal from './layout/DisenoPortal';
 import Inicio from './pages/Home';
@@ -24,6 +25,8 @@ import './App.css';
 function Aplicacion() {
   return (
     <Routes>
+      <Route path="/" element={<RutaInicial />} />
+
       <Route element={<DisenoPortal />}>
         <Route path="/portal/acceso" element={<AccesoPortales />} />
 
@@ -51,7 +54,7 @@ function Aplicacion() {
       <Route path="/404" element={<PaginaNoEncontrada />} />
 
       <Route element={<ProtectorRuta rolesPermitidos={['ADMIN']} />}>
-        <Route path="/" element={<DisenoBase />}>
+        <Route path="/administracion" element={<DisenoBase />}>
           <Route index element={<Inicio />} />
           <Route path="reportes" element={<Reportes />} />
           <Route path="agenda-turnos">
