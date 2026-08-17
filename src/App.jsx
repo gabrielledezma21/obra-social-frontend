@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectorRuta from './components/autenticacion/ProtectorRuta';
 import DisenoBase from './layout/layoutBase';
+import DisenoPortal from './layout/DisenoPortal';
 import Inicio from './pages/Home';
 import Reportes from './pages/Reportes';
 import ListadoAgendas from './pages/agenda-turnos/Listado';
@@ -23,20 +24,31 @@ import './App.css';
 function Aplicacion() {
   return (
     <Routes>
-      <Route path="/portal/acceso" element={<AccesoPortales />} />
+      <Route element={<DisenoPortal />}>
+        <Route path="/portal/acceso" element={<AccesoPortales />} />
+
+        <Route
+          element={
+            <ProtectorRuta
+              rolesPermitidos={['ADMIN', 'AFILIADO', 'PRESTADOR']}
+              permitirCambioPendiente
+            />
+          }
+        >
+          <Route path="/cambiar-contrasena" element={<CambiarContrasena />} />
+        </Route>
+
+        <Route element={<ProtectorRuta rolesPermitidos={['AFILIADO']} />}>
+          <Route path="/portal/afiliado" element={<PortalAfiliado />} />
+        </Route>
+
+        <Route element={<ProtectorRuta rolesPermitidos={['PRESTADOR']} />}>
+          <Route path="/portal/prestador" element={<PortalPrestador />} />
+        </Route>
+      </Route>
+
       <Route path="/403" element={<AccesoProhibido />} />
       <Route path="/404" element={<PaginaNoEncontrada />} />
-
-      <Route
-        element={
-          <ProtectorRuta
-            rolesPermitidos={['ADMIN', 'AFILIADO', 'PRESTADOR']}
-            permitirCambioPendiente
-          />
-        }
-      >
-        <Route path="/cambiar-contrasena" element={<CambiarContrasena />} />
-      </Route>
 
       <Route element={<ProtectorRuta rolesPermitidos={['ADMIN']} />}>
         <Route path="/" element={<DisenoBase />}>
@@ -58,14 +70,6 @@ function Aplicacion() {
             <Route path="detalle/:id" element={<DetalleAfiliado />} />
           </Route>
         </Route>
-      </Route>
-
-      <Route element={<ProtectorRuta rolesPermitidos={['AFILIADO']} />}>
-        <Route path="/portal/afiliado" element={<PortalAfiliado />} />
-      </Route>
-
-      <Route element={<ProtectorRuta rolesPermitidos={['PRESTADOR']} />}>
-        <Route path="/portal/prestador" element={<PortalPrestador />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/404" replace />} />
