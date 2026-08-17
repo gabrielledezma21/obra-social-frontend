@@ -39,13 +39,14 @@ export default function ListadoAfiliadosTable({
         }}
       >
         <TableContainer>
-          <Table sx={{ minWidth: 750 }}>
+          <Table sx={{ minWidth: 850 }}>
             <TableHeader
               order={order}
               orderBy={orderBy}
               onRequestSort={onRequestSort}
               headCells={[
                 { id: 'afiliado', label: 'Afiliado' },
+                { id: 'parentesco', label: 'Parentesco' },
                 { id: 'documento', label: 'Documento' },
                 { id: 'planMedico', label: 'Plan Médico' },
                 { id: 'direcciones', label: 'Direcciones' },
@@ -56,7 +57,7 @@ export default function ListadoAfiliadosTable({
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                     <Typography color="text.secondary">
                       Cargando resultados...
                     </Typography>
@@ -64,7 +65,7 @@ export default function ListadoAfiliadosTable({
                 </TableRow>
               ) : rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                     <Typography>No se encontraron resultados</Typography>
                   </TableCell>
                 </TableRow>
@@ -83,6 +84,9 @@ export default function ListadoAfiliadosTable({
                       <Typography sx={{ fontSize: '0.9rem' }}>
                         {row.nroAfiliado}
                       </Typography>
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.9rem' }}>
+                      {row.parentesco}
                     </TableCell>
                     <TableCell sx={{ fontSize: '0.9rem' }}>
                       <Typography sx={{ fontSize: '0.9rem' }}>
