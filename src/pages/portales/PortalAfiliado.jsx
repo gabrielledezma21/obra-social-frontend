@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { limpiarSesion, portalAfiliado } from '../../services/portal';
+import PropTypes from 'prop-types';
 
 const FORMULARIO_VACIO = {
   tipo: 'RECETA',
@@ -41,7 +42,9 @@ const FORMULARIO_VACIO = {
 const obtenerId = (valor) => valor?._id ?? valor?.id ?? valor ?? '';
 
 const obtenerMensajeError = (error) =>
-  error.response?.data?.mensaje || error.message || 'Ocurrió un error inesperado';
+  error.response?.data?.mensaje ||
+  error.message ||
+  'Ocurrió un error inesperado';
 
 function Estadistica({ etiqueta, valor }) {
   return (
@@ -53,6 +56,11 @@ function Estadistica({ etiqueta, valor }) {
     </Card>
   );
 }
+
+Estadistica.propTypes = {
+  etiqueta: PropTypes.string.isRequired,
+  valor: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+};
 
 export default function PortalAfiliado() {
   const [pestana, setPestana] = useState(0);
@@ -137,9 +145,7 @@ export default function PortalAfiliado() {
         },
         formaPago: formulario.formaPago,
         cbu:
-          formulario.formaPago === 'TRANSFERENCIA'
-            ? formulario.cbu
-            : undefined,
+          formulario.formaPago === 'TRANSFERENCIA' ? formulario.cbu : undefined,
       };
     } else {
       datos = {
@@ -152,8 +158,7 @@ export default function PortalAfiliado() {
     return {
       tipo: formulario.tipo,
       afiliadoId: formulario.afiliadoId,
-      prestadorId:
-        formulario.tipo === 'RECETA' ? null : formulario.prestadorId,
+      prestadorId: formulario.tipo === 'RECETA' ? null : formulario.prestadorId,
       especialidadId:
         formulario.tipo === 'RECETA' ? null : formulario.especialidadId,
       datos,

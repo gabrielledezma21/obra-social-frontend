@@ -1,11 +1,11 @@
 import clienteApi from './api';
-import { formatAfiliadosListado: formatearListadoAfiliados } from '../utils/formats/afiliadoListado';
+import { formatAfiliadosListado as formatearListadoAfiliados } from '../utils/formats/afiliadoListado';
 import {
-  afiliadoToLegacy: adaptarAfiliadoLegado,
-  filterByText: filtrarPorTexto,
-  getId: obtenerId,
-  paginate: paginar,
-  provinceName: obtenerNombreProvincia,
+  afiliadoToLegacy as adaptarAfiliadoLegado,
+  filterByText as filtrarPorTexto,
+  getId as obtenerId,
+  paginate as paginar,
+  provinceName as obtenerNombreProvincia,
 } from './apiAdapters';
 
 const convertirAFecha = (valor) =>
@@ -55,9 +55,7 @@ const construirDatosAfiliado = (formulario, opciones = {}) => ({
       formulario.cobertura?.id ??
       ''
   ),
-  fechaAlta: convertirAFecha(
-    opciones.fechaAlta ?? formulario.vigenciaInicio
-  ),
+  fechaAlta: convertirAFecha(opciones.fechaAlta ?? formulario.vigenciaInicio),
   afiliadoTitularId: opciones.afiliadoTitularId ?? null,
 });
 
@@ -120,16 +118,11 @@ export const getTitulares = async (filtros = {}, pagina = 0, limite = 10) => {
     const afiliadosLegados = (Array.isArray(datos) ? datos : [])
       .filter((elemento) => elemento.parentesco === 'Titular')
       .map(adaptarAfiliadoLegado);
-    const afiliadosFiltrados = filtrarPorTexto(
-      afiliadosLegados,
-      filtros,
-      [
-        (elemento) => `${elemento.nombre} ${elemento.apellido}`,
-        (elemento) => elemento.numeroDocumento,
-        (elemento) =>
-          elemento.credencial ?? elemento.Contrato?.nAfiliado,
-      ]
-    );
+    const afiliadosFiltrados = filtrarPorTexto(afiliadosLegados, filtros, [
+      (elemento) => `${elemento.nombre} ${elemento.apellido}`,
+      (elemento) => elemento.numeroDocumento,
+      (elemento) => elemento.credencial ?? elemento.Contrato?.nAfiliado,
+    ]);
 
     return formatearListadoAfiliados(
       paginar(afiliadosFiltrados, pagina, limite)

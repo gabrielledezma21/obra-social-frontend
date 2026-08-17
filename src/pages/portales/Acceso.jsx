@@ -30,9 +30,7 @@ export default function AccesoPortales() {
 
   const irAlPortal = (usuario) =>
     navegar(
-      usuario.rol === 'PRESTADOR'
-        ? '/portal/prestador'
-        : '/portal/afiliado'
+      usuario.rol === 'PRESTADOR' ? '/portal/prestador' : '/portal/afiliado'
     );
 
   const enviarFormulario = async (evento) => {
@@ -48,13 +46,19 @@ export default function AccesoPortales() {
 
       const resultado =
         rol === 'AFILIADO'
-          ? await registrarAfiliado({ afiliadoId: entidadId, email, contrasena })
-          : await registrarPrestador({ prestadorId: entidadId, email, contrasena });
+          ? await registrarAfiliado({
+              afiliadoId: entidadId,
+              email,
+              contrasena,
+            })
+          : await registrarPrestador({
+              prestadorId: entidadId,
+              email,
+              contrasena,
+            });
       irAlPortal(resultado.usuario);
     } catch (errorPeticion) {
-      setError(
-        errorPeticion.response?.data?.mensaje || errorPeticion.message
-      );
+      setError(errorPeticion.response?.data?.mensaje || errorPeticion.message);
     }
   };
 
@@ -92,9 +96,7 @@ export default function AccesoPortales() {
                 </TextField>
                 <TextField
                   label={
-                    rol === 'AFILIADO'
-                      ? 'ID del afiliado'
-                      : 'ID del prestador'
+                    rol === 'AFILIADO' ? 'ID del afiliado' : 'ID del prestador'
                   }
                   value={entidadId}
                   onChange={(evento) => setEntidadId(evento.target.value)}

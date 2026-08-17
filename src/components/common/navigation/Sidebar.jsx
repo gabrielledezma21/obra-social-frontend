@@ -95,9 +95,7 @@ export default function BarraLateral({ abierto, cambiarApertura }) {
               cambiarApertura(false);
             }}
           >
-            <ListItemIcon sx={{ color: '#fff' }}>
-              {elemento.icono}
-            </ListItemIcon>
+            <ListItemIcon sx={{ color: '#fff' }}>{elemento.icono}</ListItemIcon>
             <ListItemText primary={elemento.etiqueta} />
           </MenuItem>
         ))}

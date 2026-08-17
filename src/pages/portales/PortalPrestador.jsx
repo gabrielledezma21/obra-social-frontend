@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Box,
@@ -16,9 +16,12 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { limpiarSesion, portalPrestador } from '../../services/portal';
+import PropTypes from 'prop-types';
 
 const obtenerMensajeError = (error) =>
-  error.response?.data?.mensaje || error.message || 'Ocurrió un error inesperado';
+  error.response?.data?.mensaje ||
+  error.message ||
+  'Ocurrió un error inesperado';
 
 function Estadistica({ etiqueta, valor }) {
   return (
@@ -30,6 +33,11 @@ function Estadistica({ etiqueta, valor }) {
     </Card>
   );
 }
+
+Estadistica.propTypes = {
+  etiqueta: PropTypes.string.isRequired,
+  valor: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+};
 
 export default function PortalPrestador() {
   const [pestana, setPestana] = useState(0);
@@ -47,7 +55,7 @@ export default function PortalPrestador() {
   const [error, setError] = useState('');
   const navegar = useNavigate();
 
-  const cargarDatos = async (especialidad = especialidadTurnos) => {
+  const cargarDatos = useCallback(async (especialidad = '') => {
     try {
       const [
         perfilObtenido,
@@ -68,11 +76,11 @@ export default function PortalPrestador() {
     } catch (errorPeticion) {
       setError(obtenerMensajeError(errorPeticion));
     }
-  };
+  }, []);
 
   useEffect(() => {
     cargarDatos('');
-  }, []);
+  }, [cargarDatos]);
 
   const bandejaSolicitudes = useMemo(() => {
     const ordenEstados = {
@@ -83,11 +91,13 @@ export default function PortalPrestador() {
       Rechazado: 4,
     };
 
-    return solicitudes.slice().sort(
-      (primera, segunda) =>
-        (ordenEstados[primera.estado] ?? 9) -
-        (ordenEstados[segunda.estado] ?? 9)
-    );
+    return solicitudes
+      .slice()
+      .sort(
+        (primera, segunda) =>
+          (ordenEstados[primera.estado] ?? 9) -
+          (ordenEstados[segunda.estado] ?? 9)
+      );
   }, [solicitudes]);
 
   const cambiarEstado = async (id, estado) => {
@@ -238,10 +248,12 @@ export default function PortalPrestador() {
         <Grid size={{ xs: 6, md: 3 }}>
           <Estadistica
             etiqueta="Procesadas hoy"
-            valor={(resumen.porDia || []).find(
-              (registro) =>
-                registro.fecha === new Date().toISOString().slice(0, 10)
-            )?.cantidad}
+            valor={
+              (resumen.porDia || []).find(
+                (registro) =>
+                  registro.fecha === new Date().toISOString().slice(0, 10)
+              )?.cantidad
+            }
           />
         </Grid>
       </Grid>
@@ -294,7 +306,9 @@ export default function PortalPrestador() {
                   {solicitud.estado === 'En análisis' && (
                     <>
                       <Button
-                        onClick={() => cambiarEstado(solicitud._id, 'Observado')}
+                        onClick={() =>
+                          cambiarEstado(solicitud._id, 'Observado')
+                        }
                       >
                         Observar
                       </Button>
@@ -306,7 +320,9 @@ export default function PortalPrestador() {
                       </Button>
                       <Button
                         color="error"
-                        onClick={() => cambiarEstado(solicitud._id, 'Rechazado')}
+                        onClick={() =>
+                          cambiarEstado(solicitud._id, 'Rechazado')
+                        }
                       >
                         Rechazar
                       </Button>

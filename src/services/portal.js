@@ -57,13 +57,21 @@ export const registrarPrestador = async (datos) => {
 
 export const portalAfiliado = {
   obtenerPerfil: () =>
-    clienteApi.get('/portal-afiliado/mi-perfil').then((respuesta) => respuesta.data),
+    clienteApi
+      .get('/portal-afiliado/mi-perfil')
+      .then((respuesta) => respuesta.data),
   obtenerResumen: () =>
-    clienteApi.get('/portal-afiliado/resumen').then((respuesta) => respuesta.data),
+    clienteApi
+      .get('/portal-afiliado/resumen')
+      .then((respuesta) => respuesta.data),
   obtenerCartilla: () =>
-    clienteApi.get('/portal-afiliado/cartilla').then((respuesta) => respuesta.data),
+    clienteApi
+      .get('/portal-afiliado/cartilla')
+      .then((respuesta) => respuesta.data),
   obtenerSolicitudes: () =>
-    clienteApi.get('/portal-afiliado/solicitudes').then((respuesta) => respuesta.data),
+    clienteApi
+      .get('/portal-afiliado/solicitudes')
+      .then((respuesta) => respuesta.data),
   crearSolicitud: (datos) =>
     clienteApi
       .post('/portal-afiliado/solicitudes', datos)
@@ -72,10 +80,13 @@ export const portalAfiliado = {
     clienteApi
       .put(`/portal-afiliado/solicitudes/${id}`, datos)
       .then((respuesta) => respuesta.data),
-  eliminarSolicitud: (id) => clienteApi.delete(`/portal-afiliado/solicitudes/${id}`),
+  eliminarSolicitud: (id) =>
+    clienteApi.delete(`/portal-afiliado/solicitudes/${id}`),
   responderObservacion: (id, texto) =>
     clienteApi
-      .post(`/portal-afiliado/solicitudes/${id}/responder-observacion`, { texto })
+      .post(`/portal-afiliado/solicitudes/${id}/responder-observacion`, {
+        texto,
+      })
       .then((respuesta) => respuesta.data),
   obtenerDisponibilidad: (fecha, filtros = {}) =>
     clienteApi
@@ -84,7 +95,9 @@ export const portalAfiliado = {
       })
       .then((respuesta) => respuesta.data),
   obtenerTurnos: () =>
-    clienteApi.get('/portal-afiliado/turnos').then((respuesta) => respuesta.data),
+    clienteApi
+      .get('/portal-afiliado/turnos')
+      .then((respuesta) => respuesta.data),
   reservarTurno: (datos) =>
     clienteApi
       .post('/portal-afiliado/turnos', datos)
@@ -97,11 +110,17 @@ export const portalAfiliado = {
 
 export const portalPrestador = {
   obtenerPerfil: () =>
-    clienteApi.get('/portal-prestador/mi-perfil').then((respuesta) => respuesta.data),
+    clienteApi
+      .get('/portal-prestador/mi-perfil')
+      .then((respuesta) => respuesta.data),
   obtenerResumen: () =>
-    clienteApi.get('/portal-prestador/resumen').then((respuesta) => respuesta.data),
+    clienteApi
+      .get('/portal-prestador/resumen')
+      .then((respuesta) => respuesta.data),
   obtenerSolicitudes: () =>
-    clienteApi.get('/portal-prestador/solicitudes').then((respuesta) => respuesta.data),
+    clienteApi
+      .get('/portal-prestador/solicitudes')
+      .then((respuesta) => respuesta.data),
   cambiarEstado: (id, estado, motivo = '') =>
     clienteApi
       .post(`/portal-prestador/solicitudes/${id}/estado`, { estado, motivo })

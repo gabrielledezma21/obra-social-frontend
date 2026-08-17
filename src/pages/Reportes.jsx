@@ -16,6 +16,7 @@ import {
   obtenerDistribucionPrestadores,
   obtenerPrestadoresSinAgenda,
 } from '../services/reportes';
+import PropTypes from 'prop-types';
 
 function TarjetaListado({ titulo, elementos, representar }) {
   return (
@@ -47,6 +48,12 @@ function TarjetaListado({ titulo, elementos, representar }) {
   );
 }
 
+TarjetaListado.propTypes = {
+  titulo: PropTypes.string.isRequired,
+  elementos: PropTypes.arrayOf(PropTypes.object).isRequired,
+  representar: PropTypes.func.isRequired,
+};
+
 export default function Reportes() {
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
@@ -68,9 +75,7 @@ export default function Reportes() {
       setDistribucion(distribucionObtenida);
       setPrestadoresSinAgenda(prestadoresObtenidos);
     } catch (errorPeticion) {
-      setError(
-        errorPeticion.response?.data?.mensaje || errorPeticion.message
-      );
+      setError(errorPeticion.response?.data?.mensaje || errorPeticion.message);
     }
   };
 
@@ -88,9 +93,7 @@ export default function Reportes() {
       setAfiliados(afiliadosObtenidos);
       setPrestadores(prestadoresObtenidos);
     } catch (errorPeticion) {
-      setError(
-        errorPeticion.response?.data?.mensaje || errorPeticion.message
-      );
+      setError(errorPeticion.response?.data?.mensaje || errorPeticion.message);
     }
   };
 
@@ -130,9 +133,7 @@ export default function Reportes() {
           <Grid container spacing={2} mt={1}>
             <Grid size={{ xs: 12, sm: 6 }}>
               <Typography variant="h5">{afiliados.total}</Typography>
-              <Typography color="text.secondary">
-                Altas de afiliados
-              </Typography>
+              <Typography color="text.secondary">Altas de afiliados</Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <Typography variant="h5">{prestadores.total}</Typography>

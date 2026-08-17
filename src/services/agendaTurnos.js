@@ -22,7 +22,9 @@ export const createAgendaTurnos = async ({
   const centroDeAtencionId = getId(direccion);
 
   if (!prestadorId || !especialidadId || !centroDeAtencionId) {
-    throw new Error('No se pudieron identificar el prestador, la especialidad o el centro de atención');
+    throw new Error(
+      'No se pudieron identificar el prestador, la especialidad o el centro de atención'
+    );
   }
   const { data } = await api.post('/agendas', {
     prestadorId,
