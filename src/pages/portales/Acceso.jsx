@@ -47,7 +47,7 @@ const OPCIONES_ROL = [
 ];
 
 const obtenerRutaRol = (rol) => {
-  if (rol === 'ADMIN') return '/';
+  if (rol === 'ADMIN') return '/administracion';
   if (rol === 'PRESTADOR') return '/portal/prestador';
   return '/portal/afiliado';
 };
