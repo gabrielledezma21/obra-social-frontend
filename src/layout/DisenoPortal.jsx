@@ -53,6 +53,20 @@ const COLOR_OSCURO = '#0B111E';
 const COLOR_PRINCIPAL = '#00B1EA';
 const COLOR_FONDO = '#F8F8F8';
 
+const ELEMENTO_MIS_SOLICITUDES = {
+  clave: 'mis-solicitudes',
+  etiqueta: 'Mis solicitudes',
+  icono: IconoSolicitudes,
+  pestana: 1,
+};
+
+const ELEMENTO_NUEVA_SOLICITUD = {
+  clave: 'nueva-solicitud',
+  etiqueta: 'Nueva solicitud',
+  icono: IconoSolicitudNueva,
+  pestana: 0,
+};
+
 const ELEMENTO_MIS_TURNOS = {
   clave: 'mis-turnos',
   etiqueta: 'Mis turnos',
@@ -72,16 +86,10 @@ const ELEMENTO_SACAR_TURNO = {
 const ELEMENTOS_AFILIADO = [
   { clave: 'resumen', etiqueta: 'Resumen', icono: IconoResumen },
   {
-    clave: 'nueva-solicitud',
-    etiqueta: 'Nueva solicitud',
-    icono: IconoSolicitudNueva,
-    pestana: 0,
-  },
-  {
     clave: 'solicitudes',
     etiqueta: 'Solicitudes',
     icono: IconoSolicitudes,
-    pestana: 1,
+    hijos: [ELEMENTO_MIS_SOLICITUDES, ELEMENTO_NUEVA_SOLICITUD],
   },
   {
     clave: 'turnos',
@@ -298,7 +306,7 @@ function DashboardAfiliado({ datos, seleccionarElemento }) {
               >
                 <Typography variant="h6">Solicitudes a revisar</Typography>
                 <Button
-                  onClick={() => seleccionarElemento(ELEMENTOS_AFILIADO[2])}
+                  onClick={() => seleccionarElemento(ELEMENTO_MIS_SOLICITUDES)}
                 >
                   Ver todas
                 </Button>
@@ -339,7 +347,7 @@ function DashboardAfiliado({ datos, seleccionarElemento }) {
             <Button
               variant="contained"
               startIcon={<IconoSolicitudNueva />}
-              onClick={() => seleccionarElemento(ELEMENTOS_AFILIADO[1])}
+              onClick={() => seleccionarElemento(ELEMENTO_NUEVA_SOLICITUD)}
             >
               Nueva solicitud
             </Button>
@@ -353,7 +361,7 @@ function DashboardAfiliado({ datos, seleccionarElemento }) {
             <Button
               variant="outlined"
               startIcon={<IconoCartilla />}
-              onClick={() => seleccionarElemento(ELEMENTOS_AFILIADO[4])}
+              onClick={() => seleccionarElemento(ELEMENTOS_AFILIADO[3])}
             >
               Ver cartilla médica
             </Button>
@@ -588,7 +596,7 @@ export default function DisenoPortal() {
   const [barraAbierta, setBarraAbierta] = useState(false);
   const [menuMobileAbierto, setMenuMobileAbierto] = useState(false);
   const [elementoActivo, setElementoActivo] = useState('resumen');
-  const [turnosAbierto, setTurnosAbierto] = useState(false);
+  const [grupoAbierto, setGrupoAbierto] = useState(null);
   const [datosResumen, setDatosResumen] = useState({
     perfil: null,
     resumen: {},
@@ -670,21 +678,24 @@ export default function DisenoPortal() {
     <List className="sidebar-list" sx={{ flexGrow: 1 }}>
       {elementos.map((elemento) => {
         const Icono = elemento.icono;
-        const esGrupoTurnos = elemento.clave === 'turnos' && elemento.hijos;
-        const hijoTurnosActivo =
-          esGrupoTurnos &&
+        const esGrupo = Boolean(elemento.hijos?.length);
+        const hijoActivo =
+          esGrupo &&
           elemento.hijos.some((hijo) => hijo.clave === elementoActivo);
         const seleccionado =
-          elementoActivo === elemento.clave || Boolean(hijoTurnosActivo);
+          elementoActivo === elemento.clave || Boolean(hijoActivo);
+        const estaAbierto = grupoAbierto === elemento.clave;
 
         const manejarClickPrincipal = () => {
-          if (esGrupoTurnos) {
+          if (esGrupo) {
             if (!abierta && !esMobile) {
               setBarraAbierta(true);
-              setTurnosAbierto(true);
+              setGrupoAbierto(elemento.clave);
               return;
             }
-            setTurnosAbierto((valorActual) => !valorActual);
+            setGrupoAbierto((grupoActual) =>
+              grupoActual === elemento.clave ? null : elemento.clave
+            );
             return;
           }
           seleccionarElemento(elemento);
@@ -711,8 +722,8 @@ export default function DisenoPortal() {
                   className={`sidebar-item-text ${seleccionado ? 'active' : ''}`}
                   primaryTypographyProps={{ fontSize: '1rem' }}
                 />
-                {esGrupoTurnos &&
-                  (turnosAbierto ? <IconoContraer /> : <IconoExpandir />)}
+                {esGrupo &&
+                  (estaAbierto ? <IconoContraer /> : <IconoExpandir />)}
               </>
             )}
           </ListItemButton>
@@ -732,7 +743,7 @@ export default function DisenoPortal() {
           </Tooltip>
         );
 
-        if (!esGrupoTurnos || !abierta || !turnosAbierto) {
+        if (!esGrupo || !abierta || !estaAbierto) {
           return <Box key={elemento.clave}>{principal}</Box>;
         }
 

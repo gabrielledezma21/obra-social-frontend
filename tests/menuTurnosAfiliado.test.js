@@ -27,3 +27,17 @@ test('los accesos del sidebar abren el modo correcto de turnos', () => {
   assert.match(turnos, /evento\.detail\?\.vista === 'sacar'/);
   assert.match(turnos, /evento\.detail\?\.vista === 'listado'/);
 });
+
+test('Solicitudes agrupa Mis solicitudes y Nueva solicitud en el sidebar', () => {
+  const diseno = leer('src/layout/DisenoPortal.jsx');
+
+  assert.match(diseno, /etiqueta: 'Solicitudes'/);
+  assert.match(diseno, /etiqueta: 'Mis solicitudes'/);
+  assert.match(diseno, /etiqueta: 'Nueva solicitud'/);
+  assert.match(
+    diseno,
+    /hijos: \[ELEMENTO_MIS_SOLICITUDES, ELEMENTO_NUEVA_SOLICITUD\]/
+  );
+  assert.match(diseno, /const esGrupo = Boolean\(elemento\.hijos\?\.length\)/);
+  assert.match(diseno, /grupoAbierto === elemento\.clave/);
+});
