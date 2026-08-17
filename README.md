@@ -2,6 +2,8 @@
 
 Interfaz web de **MedIntegral**, desarrollada con React, Vite y Material UI. La aplicación integra en un mismo frontend los módulos de Administración, Afiliados y Prestadores, conectados a la API real mediante Axios.
 
+La **versión actual fue desarrollada por Gabriel Ledezma**. El proyecto tomó como punto de partida una versión anterior realizada en equipo, en la que también participé, pero esta implementación fue ampliamente rediseñada, refactorizada, ampliada e integrada y ya no corresponde a aquella versión original.
+
 ## Estado del proyecto
 
 La aplicación se encuentra en etapa de integración y validación. La rama de trabajo actual incluye navegación por roles, pruebas de regresión, validación de contratos HTTP, filtros administrativos y los flujos principales de turnos, solicitudes e historia clínica.
@@ -452,14 +454,8 @@ VITE_API_URL=https://tu-backend.example.com
 
 El backend debe permitir el origen del frontend mediante su configuración `CORS_ORIGIN`.
 
-## Equipo original
+## Autoría
 
-- [Ailen Pisoni](https://github.com/AilenPisoni0)
-- [Alina Marquez](https://github.com/alymarquez)
-- [Melina Alvarez](https://github.com/MeliAlvarez14)
-- [Cristian Gonzalez](https://github.com/CristianEGonzalez)
-- [Gabriel Ledezma](https://github.com/gabrielledezma21)
+**Desarrollado actualmente por [Gabriel Ledezma](https://github.com/gabrielledezma21).**
 
-## Mantenimiento actual
-
-La integración actual de los módulos de Administración, Afiliados y Prestadores es mantenida en este repositorio por [Gabriel Ledezma](https://github.com/gabrielledezma21).
+MedIntegral Frontend se basa conceptualmente en una versión previa realizada en equipo, en la que también participé. La versión de este repositorio fue posteriormente rediseñada, refactorizada, ampliada e integrada por mí para unificar Administración, Afiliados y Prestadores sobre la API actual. Por ese motivo, esta implementación se considera una evolución propia y ya no representa el proyecto grupal original.
