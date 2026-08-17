@@ -3,13 +3,28 @@ import clienteApi from './api';
 const CLAVE_TOKEN = 'medintegral_token';
 const CLAVE_USUARIO = 'medintegral_usuario';
 
+export const limpiarSesion = () => {
+  localStorage.removeItem(CLAVE_TOKEN);
+  localStorage.removeItem(CLAVE_USUARIO);
+};
+
 export const obtenerSesion = () => {
   const token = localStorage.getItem(CLAVE_TOKEN);
   const usuarioGuardado = localStorage.getItem(CLAVE_USUARIO);
-  return {
-    token,
-    usuario: usuarioGuardado ? JSON.parse(usuarioGuardado) : null,
-  };
+
+  if (!usuarioGuardado) {
+    return { token, usuario: null };
+  }
+
+  try {
+    return {
+      token,
+      usuario: JSON.parse(usuarioGuardado),
+    };
+  } catch {
+    limpiarSesion();
+    return { token: null, usuario: null };
+  }
 };
 
 export const guardarSesion = ({ token, usuario }) => {
@@ -19,11 +34,6 @@ export const guardarSesion = ({ token, usuario }) => {
 
 export const actualizarUsuarioSesion = (usuario) => {
   localStorage.setItem(CLAVE_USUARIO, JSON.stringify(usuario));
-};
-
-export const limpiarSesion = () => {
-  localStorage.removeItem(CLAVE_TOKEN);
-  localStorage.removeItem(CLAVE_USUARIO);
 };
 
 export const iniciarSesion = async (identificador, contrasena, rol) => {
