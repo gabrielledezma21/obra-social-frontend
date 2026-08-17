@@ -80,7 +80,7 @@ export default function DisenoPortal() {
           }}
         >
           <Box sx={{ mb: 6 }}>
-            <LogoMarca clickable={false} size="small" compact />
+            <LogoMarca clickable={false} size="small" compacto />
           </Box>
 
           <Stack spacing={1.5} alignItems="center" sx={{ flexGrow: 1 }}>
