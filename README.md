@@ -1,111 +1,187 @@
 # MedIntegral – Frontend
 
-> Interfaz de usuario del sistema **MedIntegral**, construida con React y Vite.  
-> <img width="4032" height="2302" alt="image" src="https://github.com/user-attachments/assets/50fe2b69-f212-4664-b207-0d57e66fc93b" />
+Interfaz de usuario del sistema **MedIntegral**, construida con React, Vite y Material UI.
 
 ---
 
 ## Descripción
 
-MedIntegral-frontend es la parte visual del proyecto MedIntegral, pensado para administrar la gestión de datos médicos / de salud (turnos, pacientes, historial, etc.). El frontend consume una API (backend), presentando formularios, vistas y componentes de interfaz para que los administrativos accedan a las funcionalidades del sistema.
+MedIntegral integra tres experiencias dentro de la misma aplicación:
+
+- **Administración**: afiliados, grupos familiares, prestadores, agendas y reportes.
+- **Portal del afiliado**: cartilla, turnos y solicitudes.
+- **Portal del prestador**: solicitudes, pacientes, situaciones terapéuticas, turnos e historia clínica.
+
+La aplicación consume la API de MedIntegral y mantiene navegación, autenticación y permisos según el rol del usuario.
 
 ---
 
-## Aplicación
+## Funcionalidades principales
 
-Esta versión está adaptada para desplegarse en Vercel y consumir la API pública
-de MedIntegral. Incluye las funcionalidades principales del sistema:
+### Administración
 
-- Gestión de prestadores
+- Gestión de afiliados y todos los integrantes del grupo familiar.
+- Baja y reincorporación individual o de todo el grupo familiar.
+- Gestión de prestadores y centros médicos.
+- Gestión de agendas y horarios.
+- Reportes administrativos.
 
-- Administración de agendas y horarios
+### Afiliados
 
-- Manejo de afiliados
+- Dashboard de resumen.
+- Cartilla médica.
+- Disponibilidad y reserva de turnos.
+- Cancelación y consulta de turnos.
+- Solicitudes de recetas, autorizaciones y reintegros.
+- Respuesta a solicitudes observadas.
 
-- Estadísticas en tiempo real
+### Prestadores
 
-- Navegación optimizada y UI responsiva
+- Dashboard profesional.
+- Bandeja de solicitudes.
+- Gestión del estado de solicitudes.
+- Búsqueda de afiliados.
+- Situaciones terapéuticas.
+- Turnos.
+- Historia clínica y notas de atención.
+
+### Autenticación
+
+- Acceso por roles `ADMIN`, `AFILIADO` y `PRESTADOR`.
+- Activación de cuentas de afiliados y prestadores.
+- Cambio obligatorio de contraseña temporal.
+- Token centralizado en el cliente Axios para todas las llamadas protegidas.
 
 ---
 
 ## Estructura general
 
+```text
+/public                  recursos públicos
+/src
+├── assets               imágenes y recursos estáticos
+├── components           componentes reutilizables de UI
+├── context              contextos globales de React
+├── hooks                hooks personalizados
+├── layout               headers, sidebars, footers y layouts
+├── mocks                datos simulados heredados para desarrollo
+├── pages                vistas asociadas a rutas
+├── services             cliente API, servicios y adaptadores
+└── utils                formateadores, validadores y utilidades
+/tests                   pruebas de regresión y contratos
 ```
-/public – recursos públicos, index.html, favicon, etc.
-/src – código fuente React JSX
-├── assets – imágenes, logos, estilos y otros recursos estáticos.
-├── components – omponentes reutilizables de UI usados en distintas partes de la app.
-├── context – contextos globales de React.
-├── hooks – hooks personalizados con lógica reutilizable (fetch, formularios, helpers).
-├── layout - componentes estructurales como headers, sidebars, footers y layouts de página.
-├── mocks  – datos simulados para desarrollo sin backend o para testing manual.
-├── pages – vistas completas asociadas a rutas; representan pantallas de la aplicación.
-├── services – funciones para interactuar con la API: fetch/axios, manejo de errores, mappers.
-├── utils – utilidades genéricas: formateadores, validadores y funciones auxiliares.
-```
-
-Esta organización sigue buenas prácticas de proyectos React + Vite, manteniendo una arquitectura modular y legible.
 
 ---
 
-## Instalación / Desarrollo local
+## Instalación y desarrollo local
 
-1. Clonar el repositorio
-
-```
+```bash
 git clone https://github.com/gabrielledezma21/obra-social-frontend.git
 cd obra-social-frontend
-```
-
-2. Instalar dependencias
-
-```
 npm install
 ```
 
-3. Ejecutar en modo desarrollo (con recarga automática — HMR)
+Para desarrollo:
 
-```
+```bash
 npm run dev
 ```
 
-4. Abrir en el browser en la URL que indique la terminal (por defecto suele ser http://localhost:3000)
-   5.(Opcional) Linter / formateo: si querés asegurarte de seguir las reglas de estilo/proyectos
+Vite utiliza normalmente:
 
+```text
+http://localhost:5173
 ```
+
+La API local predeterminada es:
+
+```text
+http://localhost:3002
+```
+
+También puede configurarse explícitamente:
+
+```env
+VITE_API_URL=http://localhost:3002
+```
+
+---
+
+## Pruebas y validación
+
+Ejecutar las pruebas de regresión y contratos:
+
+```bash
+npm test
+```
+
+Validar formato y reglas del código:
+
+```bash
 npm run lint
-npm run format
 ```
+
+Compilar para producción:
+
+```bash
+npm run build
+```
+
+La suite `tests/*.test.js` protege, entre otros casos:
+
+- adaptación de afiliados, prestadores y agendas recibidos desde la API;
+- número de integrante y parentesco de grupos familiares;
+- conversión de horarios;
+- paginación y búsqueda;
+- rutas administrativas bajo `/administracion/...`;
+- enlaces de alta y detalle;
+- contratos HTTP de los servicios administrativos;
+- contratos HTTP de los portales de afiliado y prestador;
+- contratos de autenticación;
+- interceptor central de `Authorization: Bearer <token>`.
+
+### Integración continua
+
+`.github/workflows/pruebas-frontend.yml` ejecuta automáticamente:
+
+```bash
+npm ci
+npm audit --audit-level=high
+npm test
+npm run lint
+npm run build
+```
+
+La CI falla si aparece una vulnerabilidad alta, una regresión de servicios, un error de ESLint o un fallo de compilación.
+
+---
 
 ## Despliegue en Vercel
 
-El proyecto está preparado como una SPA de Vite. Al importarlo en Vercel, la
-configuración se detecta automáticamente y `vercel.json` redirige las rutas de
-React Router a `index.html`.
+El proyecto está preparado como SPA de Vite. `vercel.json` redirige las rutas de React Router a `index.html`.
 
-Configurar la siguiente variable de entorno en Vercel:
+Configurar:
 
 ```env
 VITE_API_URL=https://medintegral-api.vercel.app
 ```
 
-La URL no debe incluir el sufijo `/api`. Para desarrollo local se utiliza
-`http://localhost:3002` cuando `VITE_API_URL` no está definida.
-
-Este frontend incluye una capa de adaptación para el contrato actual de la API
-de MedIntegral. Los catálogos fijos (planes, documentos, parentescos y
-provincias) se mantienen en el cliente porque el backend no expone esos
-endpoints.
+La URL no debe incluir el sufijo `/api`.
 
 ---
 
 ## Tecnologías
 
-- React + Vite
-- React Routes
+- React 19
+- Vite
+- React Router
 - JavaScript
 - Material UI
-- ESLint / Prettier
+- Axios
+- ESLint
+- Prettier
+- Node Test Runner para pruebas de regresión
+- GitHub Actions
 
 ---
 
