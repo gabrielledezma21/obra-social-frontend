@@ -20,73 +20,13 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GestionTurnosAfiliado from './GestionTurnosAfiliado';
-
-const DESPLAZAMIENTO_ARGENTINA = '-03:00';
+import {
+  formatearFechaTurno,
+  obtenerEstadoVisualTurno,
+  separarTurnosAfiliado,
+} from '../../utils/turnosAfiliado';
 
 const obtenerId = (valor) => valor?._id ?? valor?.id ?? valor ?? '';
-const obtenerFechaTexto = (valor) => String(valor || '').slice(0, 10);
-
-const obtenerMomentoTurno = (turno) => {
-  const fecha = obtenerFechaTexto(turno?.fecha);
-  const hora = String(turno?.hora || '');
-
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) || !/^\d{2}:\d{2}$/.test(hora)) {
-    return null;
-  }
-
-  const momento = new Date(`${fecha}T${hora}:00${DESPLAZAMIENTO_ARGENTINA}`);
-  return Number.isNaN(momento.getTime()) ? null : momento;
-};
-
-const formatearFecha = (valor) => {
-  const fecha = obtenerFechaTexto(valor);
-  const coincidencia = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fecha);
-  if (!coincidencia) return fecha || 'Fecha sin informar';
-
-  return `${coincidencia[3]}/${coincidencia[2]}/${coincidencia[1]}`;
-};
-
-const separarTurnos = (turnos, ahora = Date.now()) => {
-  const proximos = [];
-  const anteriores = [];
-
-  turnos.forEach((turno) => {
-    const momento = obtenerMomentoTurno(turno);
-    const esProximo =
-      turno.estado === 'RESERVADO' &&
-      momento !== null &&
-      momento.getTime() >= ahora;
-
-    if (esProximo) proximos.push(turno);
-    else anteriores.push(turno);
-  });
-
-  proximos.sort((primero, segundo) => {
-    const momentoPrimero = obtenerMomentoTurno(primero)?.getTime() ?? Infinity;
-    const momentoSegundo = obtenerMomentoTurno(segundo)?.getTime() ?? Infinity;
-    return momentoPrimero - momentoSegundo;
-  });
-
-  anteriores.sort((primero, segundo) => {
-    const momentoPrimero = obtenerMomentoTurno(primero)?.getTime() ?? 0;
-    const momentoSegundo = obtenerMomentoTurno(segundo)?.getTime() ?? 0;
-    return momentoSegundo - momentoPrimero;
-  });
-
-  return { proximos, anteriores };
-};
-
-const obtenerEstadoVisual = (turno, ahora = Date.now()) => {
-  if (turno.estado === 'CANCELADO') return 'Cancelado';
-  if (turno.estado === 'ATENDIDO') return 'Atendido';
-
-  const momento = obtenerMomentoTurno(turno);
-  if (turno.estado === 'RESERVADO' && momento?.getTime() < ahora) {
-    return 'Pasado';
-  }
-
-  return 'Reservado';
-};
 
 const obtenerColorEstado = (estado) => {
   if (estado === 'Reservado') return 'primary';
@@ -119,7 +59,7 @@ export default function TurnosAfiliado({
 }) {
   const [modo, setModo] = useState('listado');
   const [pestanaTurnos, setPestanaTurnos] = useState(0);
-  const { proximos, anteriores } = separarTurnos(turnos);
+  const { proximos, anteriores } = separarTurnosAfiliado(turnos);
   const turnosVisibles = pestanaTurnos === 0 ? proximos : anteriores;
 
   const reservarYVolver = async (horario) => {
@@ -234,13 +174,13 @@ export default function TurnosAfiliado({
               <TableBody>
                 {turnosVisibles.map((turno) => {
                   const integrante = obtenerIntegrante(turno, integrantes);
-                  const estado = obtenerEstadoVisual(turno);
+                  const estado = obtenerEstadoVisualTurno(turno);
 
                   return (
                     <TableRow hover key={turno._id}>
                       <TableCell>
                         <Typography fontWeight={600}>
-                          {formatearFecha(turno.fecha)}
+                          {formatearFechaTurno(turno.fecha)}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {turno.hora || 'Hora sin informar'}
