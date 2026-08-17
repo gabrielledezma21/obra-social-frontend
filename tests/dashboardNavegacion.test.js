@@ -29,9 +29,14 @@ test('las tarjetas del dashboard administrativo navegan dentro de /administracio
     "link: '/afiliados/listado'",
     "link: '/prestadores/listado'",
     "link: '/agenda-turnos/listado'",
-  ].forEach((rutaVieja) => assert.doesNotMatch(contextoDashboard, new RegExp(rutaVieja)));
+  ].forEach((rutaVieja) => {
+    assert.doesNotMatch(contextoDashboard, new RegExp(rutaVieja));
+  });
 
   assert.match(tarjetas, /component=\{RouterLink\}/);
   assert.match(tarjetas, /to=\{item\.link\}/);
-  assert.match(aplicacion, /path="\/administracion"\s+element=\{<DisenoBase\s*\/>\}/);
+  assert.match(
+    aplicacion,
+    /path="\/administracion"\s+element=\{<DisenoBase\s*\/>\}/
+  );
 });
