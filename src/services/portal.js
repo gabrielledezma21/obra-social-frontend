@@ -17,6 +17,10 @@ export const guardarSesion = ({ token, usuario }) => {
   localStorage.setItem(CLAVE_USUARIO, JSON.stringify(usuario));
 };
 
+export const actualizarUsuarioSesion = (usuario) => {
+  localStorage.setItem(CLAVE_USUARIO, JSON.stringify(usuario));
+};
+
 export const limpiarSesion = () => {
   localStorage.removeItem(CLAVE_TOKEN);
   localStorage.removeItem(CLAVE_USUARIO);
@@ -28,30 +32,37 @@ clienteApi.interceptors.request.use((configuracion) => {
   return configuracion;
 });
 
-export const iniciarSesionPortal = async (email, contrasena) => {
+export const iniciarSesion = async (identificador, contrasena, rol) => {
   const { data: datosRespuesta } = await clienteApi.post(
     '/autenticacion/iniciar-sesion',
-    { email, contrasena }
+    { identificador, contrasena, rol }
   );
   guardarSesion(datosRespuesta);
   return datosRespuesta;
 };
 
-export const registrarAfiliado = async (datos) => {
-  const { data: datosRespuesta } = await clienteApi.post(
-    '/autenticacion/registro-afiliado',
-    datos
-  );
-  guardarSesion(datosRespuesta);
-  return datosRespuesta;
-};
+export const activarCuentaAfiliado = async (dni, email) =>
+  (
+    await clienteApi.post('/autenticacion/activar-afiliado', {
+      dni,
+      email,
+    })
+  ).data;
 
-export const registrarPrestador = async (datos) => {
+export const activarCuentaPrestador = async (dni, email) =>
+  (
+    await clienteApi.post('/autenticacion/activar-prestador', {
+      dni,
+      email,
+    })
+  ).data;
+
+export const cambiarContrasena = async (contrasenaActual, contrasenaNueva) => {
   const { data: datosRespuesta } = await clienteApi.post(
-    '/autenticacion/registro-prestador',
-    datos
+    '/autenticacion/cambiar-contrasena',
+    { contrasenaActual, contrasenaNueva }
   );
-  guardarSesion(datosRespuesta);
+  actualizarUsuarioSesion(datosRespuesta.usuario);
   return datosRespuesta;
 };
 
