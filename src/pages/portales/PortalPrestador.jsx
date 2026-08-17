@@ -14,9 +14,9 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { limpiarSesion, portalPrestador } from '../../services/portal';
+import { portalPrestador } from '../../services/portal';
 import PropTypes from 'prop-types';
+import HistoriaClinicaPrestador from '../../components/portales/HistoriaClinicaPrestador';
 
 const obtenerMensajeError = (error) =>
   error.response?.data?.mensaje ||
@@ -46,14 +46,7 @@ export default function PortalPrestador() {
   const [solicitudes, setSolicitudes] = useState([]);
   const [turnos, setTurnos] = useState([]);
   const [especialidadTurnos, setEspecialidadTurnos] = useState('');
-  const [busqueda, setBusqueda] = useState('');
-  const [afiliados, setAfiliados] = useState([]);
-  const [afiliadoSeleccionado, setAfiliadoSeleccionado] = useState(null);
-  const [situaciones, setSituaciones] = useState([]);
-  const [historia, setHistoria] = useState([]);
-  const [soloMias, setSoloMias] = useState(false);
   const [error, setError] = useState('');
-  const navegar = useNavigate();
 
   const cargarDatos = useCallback(async (especialidad = '') => {
     try {
@@ -116,77 +109,6 @@ export default function PortalPrestador() {
     }
   };
 
-  const buscarAfiliados = async () => {
-    try {
-      setAfiliados(await portalPrestador.buscarAfiliados(busqueda));
-    } catch (errorPeticion) {
-      setError(obtenerMensajeError(errorPeticion));
-    }
-  };
-
-  const seleccionarAfiliado = async (afiliado) => {
-    setAfiliadoSeleccionado(afiliado);
-
-    try {
-      const [datosSituaciones, datosHistoria] = await Promise.all([
-        portalPrestador.obtenerSituaciones(afiliado._id),
-        portalPrestador.obtenerHistoria(afiliado._id, soloMias),
-      ]);
-      setSituaciones(datosSituaciones.situaciones || []);
-      setHistoria(datosHistoria || []);
-    } catch (errorPeticion) {
-      setError(obtenerMensajeError(errorPeticion));
-    }
-  };
-
-  const recargarHistoria = async (soloPropias) => {
-    setSoloMias(soloPropias);
-    if (!afiliadoSeleccionado) return;
-
-    try {
-      setHistoria(
-        await portalPrestador.obtenerHistoria(
-          afiliadoSeleccionado._id,
-          soloPropias
-        )
-      );
-    } catch (errorPeticion) {
-      setError(obtenerMensajeError(errorPeticion));
-    }
-  };
-
-  const agregarSituacion = async () => {
-    if (!afiliadoSeleccionado) return;
-
-    const situacionTerapeuticaId = window.prompt(
-      'ID de la situación terapéutica a registrar'
-    );
-    if (!situacionTerapeuticaId) return;
-
-    try {
-      await portalPrestador.crearSituacion({
-        afiliadoId: afiliadoSeleccionado._id,
-        situacionTerapeuticaId,
-        fechaInicio: new Date().toISOString(),
-      });
-      await seleccionarAfiliado(afiliadoSeleccionado);
-    } catch (errorPeticion) {
-      setError(obtenerMensajeError(errorPeticion));
-    }
-  };
-
-  const finalizarSituacion = async (situacionId) => {
-    try {
-      await portalPrestador.modificarSituacion(situacionId, {
-        fechaFin: new Date().toISOString(),
-        activa: false,
-      });
-      await seleccionarAfiliado(afiliadoSeleccionado);
-    } catch (errorPeticion) {
-      setError(obtenerMensajeError(errorPeticion));
-    }
-  };
-
   const agregarNota = async (turno) => {
     const nota = window.prompt('Nota de atención para la historia clínica');
     if (!nota) return;
@@ -208,11 +130,6 @@ export default function PortalPrestador() {
     }
   };
 
-  const cerrarSesion = () => {
-    limpiarSesion();
-    navegar('/portal/acceso');
-  };
-
   return (
     <Stack spacing={3}>
       <Stack
@@ -226,7 +143,6 @@ export default function PortalPrestador() {
             {perfil?.nombre || 'Cargando...'}
           </Typography>
         </Box>
-        <Button onClick={cerrarSesion}>Cerrar sesión</Button>
       </Stack>
 
       {error && (
@@ -265,7 +181,6 @@ export default function PortalPrestador() {
       >
         <Tab label="Bandeja de solicitudes" />
         <Tab label="Turnos" />
-        <Tab label="Afiliados y situaciones" />
         <Tab label="Historia clínica" />
       </Tabs>
 
@@ -397,154 +312,7 @@ export default function PortalPrestador() {
         </Stack>
       )}
 
-      {pestana === 2 && (
-        <Stack spacing={2}>
-          <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
-            <TextField
-              fullWidth
-              label="Buscar por afiliado, apellido o teléfono"
-              value={busqueda}
-              onChange={(evento) => setBusqueda(evento.target.value)}
-              onKeyDown={(evento) =>
-                evento.key === 'Enter' && buscarAfiliados()
-              }
-            />
-            <Button variant="contained" onClick={buscarAfiliados}>
-              Buscar
-            </Button>
-          </Stack>
-
-          <Grid container spacing={2}>
-            {afiliados.map((afiliado) => (
-              <Grid key={afiliado._id} size={{ xs: 12, md: 6 }}>
-                <Card
-                  variant={
-                    afiliadoSeleccionado?._id === afiliado._id
-                      ? 'outlined'
-                      : undefined
-                  }
-                >
-                  <CardContent>
-                    <Typography variant="h6">
-                      {afiliado.nombre} {afiliado.apellido}
-                    </Typography>
-                    <Typography>
-                      Credencial{' '}
-                      {String(afiliado.numeroAfiliado || '').padStart(7, '0')}-
-                      {String(afiliado.numeroIntegrante || '').padStart(2, '0')}
-                    </Typography>
-                    <Button onClick={() => seleccionarAfiliado(afiliado)}>
-                      Ver grupo y situaciones
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-
-          {afiliadoSeleccionado && (
-            <Card>
-              <CardContent>
-                <Stack direction="row" justifyContent="space-between">
-                  <Typography variant="h6">
-                    Situaciones de {afiliadoSeleccionado.nombre}{' '}
-                    {afiliadoSeleccionado.apellido}
-                  </Typography>
-                  <Button onClick={agregarSituacion}>Dar de alta</Button>
-                </Stack>
-
-                {situaciones.length === 0 ? (
-                  <Typography color="text.secondary" mt={2}>
-                    Sin situaciones registradas.
-                  </Typography>
-                ) : (
-                  situaciones.map((situacion) => (
-                    <Stack
-                      key={situacion._id}
-                      direction={{ xs: 'column', sm: 'row' }}
-                      justifyContent="space-between"
-                      py={1}
-                    >
-                      <Box>
-                        <Typography>
-                          {situacion.afiliadoId?.nombre}{' '}
-                          {situacion.afiliadoId?.apellido}:{' '}
-                          {situacion.situacionTerapeuticaId?.nombre}
-                        </Typography>
-                        <Typography variant="body2">
-                          Desde{' '}
-                          {new Date(situacion.fechaInicio).toLocaleDateString(
-                            'es-AR'
-                          )}
-                          {situacion.fechaFin
-                            ? ` hasta ${new Date(
-                                situacion.fechaFin
-                              ).toLocaleDateString('es-AR')}`
-                            : ''}
-                        </Typography>
-                      </Box>
-                      {situacion.activa && (
-                        <Button
-                          color="warning"
-                          onClick={() => finalizarSituacion(situacion._id)}
-                        >
-                          Dar de baja
-                        </Button>
-                      )}
-                    </Stack>
-                  ))
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </Stack>
-      )}
-
-      {pestana === 3 && (
-        <Stack spacing={2}>
-          {!afiliadoSeleccionado && (
-            <Alert severity="info">
-              Primero buscá y seleccioná un afiliado en la pestaña anterior.
-            </Alert>
-          )}
-          {afiliadoSeleccionado && (
-            <>
-              <Stack direction="row" gap={1}>
-                <Button
-                  variant={!soloMias ? 'contained' : 'outlined'}
-                  onClick={() => recargarHistoria(false)}
-                >
-                  Toda la historia
-                </Button>
-                <Button
-                  variant={soloMias ? 'contained' : 'outlined'}
-                  onClick={() => recargarHistoria(true)}
-                >
-                  Solo mis notas
-                </Button>
-              </Stack>
-
-              {historia.length === 0 ? (
-                <Alert severity="info">
-                  No hay notas en la historia clínica.
-                </Alert>
-              ) : (
-                historia.map((registro) => (
-                  <Card key={registro._id}>
-                    <CardContent>
-                      <Typography>{registro.nota}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {new Date(registro.fecha).toLocaleString('es-AR')} ·{' '}
-                        {registro.prestadorId?.nombre}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </>
-          )}
-        </Stack>
-      )}
+      {pestana === 2 && <HistoriaClinicaPrestador />}
     </Stack>
   );
 }

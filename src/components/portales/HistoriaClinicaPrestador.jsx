@@ -14,6 +14,7 @@ import {
   Divider,
   Grid,
   InputAdornment,
+  MenuItem,
   Paper,
   Stack,
   Table,
@@ -407,7 +408,9 @@ export default function HistoriaClinicaPrestador() {
                               </Box>
                               <Chip
                                 size="small"
-                                label={situacion.activa ? 'Activa' : 'Finalizada'}
+                                label={
+                                  situacion.activa ? 'Activa' : 'Finalizada'
+                                }
                                 color={situacion.activa ? 'success' : 'default'}
                               />
                             </Stack>
@@ -416,7 +419,9 @@ export default function HistoriaClinicaPrestador() {
                                 size="small"
                                 color="warning"
                                 sx={{ mt: 0.5 }}
-                                onClick={() => finalizarSituacion(situacion._id)}
+                                onClick={() =>
+                                  finalizarSituacion(situacion._id)
+                                }
                               >
                                 Finalizar
                               </Button>
@@ -514,7 +519,9 @@ export default function HistoriaClinicaPrestador() {
             sx={{ mt: 1 }}
           >
             {catalogoSituaciones.map((situacion) => (
-              <option key={situacion._id} value={situacion._id} />
+              <MenuItem key={situacion._id} value={situacion._id}>
+                {situacion.nombre}
+              </MenuItem>
             ))}
           </TextField>
         </DialogContent>

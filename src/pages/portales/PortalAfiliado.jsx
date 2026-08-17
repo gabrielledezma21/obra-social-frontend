@@ -14,8 +14,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { limpiarSesion, portalAfiliado } from '../../services/portal';
+import { portalAfiliado } from '../../services/portal';
 import PropTypes from 'prop-types';
 import TurnosAfiliado from '../../components/portales/TurnosAfiliado';
 import CartillaMedicaAfiliado from '../../components/portales/CartillaMedicaAfiliado';
@@ -75,7 +74,6 @@ export default function PortalAfiliado() {
   const [solicitudEditandoId, setSolicitudEditandoId] = useState(null);
   const [afiliadoTurnoId, setAfiliadoTurnoId] = useState('');
   const [horariosDisponibles, setHorariosDisponibles] = useState([]);
-  const navegar = useNavigate();
 
   const cargarDatos = async () => {
     try {
@@ -295,11 +293,6 @@ export default function PortalAfiliado() {
     }
   };
 
-  const cerrarSesion = () => {
-    limpiarSesion();
-    navegar('/portal/acceso');
-  };
-
   return (
     <Stack spacing={3}>
       <Stack
@@ -319,7 +312,6 @@ export default function PortalAfiliado() {
               : 'Cargando...'}
           </Typography>
         </Box>
-        <Button onClick={cerrarSesion}>Cerrar sesión</Button>
       </Stack>
 
       {error && (

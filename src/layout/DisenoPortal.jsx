@@ -29,7 +29,6 @@ import IconoSolicitudNueva from '@mui/icons-material/AddCircleOutline';
 import IconoSolicitudes from '@mui/icons-material/FeedOutlined';
 import IconoTurnos from '@mui/icons-material/CalendarTodayOutlined';
 import IconoCartilla from '@mui/icons-material/MedicalInformationOutlined';
-import IconoAfiliados from '@mui/icons-material/PeopleOutline';
 import IconoHistoria from '@mui/icons-material/HistoryEduOutlined';
 import IconoFlecha from '@mui/icons-material/ArrowForwardOutlined';
 import { Outlet, useNavigate } from 'react-router-dom';
@@ -83,16 +82,10 @@ const ELEMENTOS_PRESTADOR = [
   },
   { clave: 'turnos', etiqueta: 'Turnos', icono: IconoTurnos, pestana: 1 },
   {
-    clave: 'afiliados',
-    etiqueta: 'Afiliados y situaciones',
-    icono: IconoAfiliados,
-    pestana: 2,
-  },
-  {
     clave: 'historia',
     etiqueta: 'Historia clínica',
     icono: IconoHistoria,
-    pestana: 3,
+    pestana: 2,
   },
 ];
 
