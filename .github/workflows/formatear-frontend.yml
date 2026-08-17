@@ -1,0 +1,56 @@
+name: Formatear frontend
+
+on:
+  push:
+    branches:
+      - agent/integrar-aplicaciones-2-3
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  formatear-y-validar:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+        with:
+          ref: agent/integrar-aplicaciones-2-3
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Aplicar ESLint y Prettier
+        run: npm run lint:fix
+
+      - name: Validar ESLint
+        run: npm run lint
+
+      - name: Ejecutar pruebas
+        run: npm test
+
+      - name: Compilar aplicación
+        run: npm run build
+
+      - name: Publicar formato corregido
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No hay cambios de formato para publicar."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Aplicar formato ESLint y Prettier"
+          git push origin HEAD:agent/integrar-aplicaciones-2-3
