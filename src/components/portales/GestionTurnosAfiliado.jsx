@@ -35,7 +35,10 @@ const obtenerEspecialidades = (prestadores) => {
     });
   });
   return [...especialidades.values()].sort((primera, segunda) =>
-    String(primera.nombre || '').localeCompare(String(segunda.nombre || ''), 'es')
+    String(primera.nombre || '').localeCompare(
+      String(segunda.nombre || ''),
+      'es'
+    )
   );
 };
 
@@ -69,9 +72,13 @@ export default function GestionTurnosAfiliado({
   const [busquedaRealizada, setBusquedaRealizada] = useState(false);
 
   const prestadoresDisponibles = useMemo(
-    () => [...cartilla].sort((primero, segundo) =>
-      String(primero.nombre || '').localeCompare(String(segundo.nombre || ''), 'es')
-    ),
+    () =>
+      [...cartilla].sort((primero, segundo) =>
+        String(primero.nombre || '').localeCompare(
+          String(segundo.nombre || ''),
+          'es'
+        )
+      ),
     [cartilla]
   );
 
@@ -166,11 +173,16 @@ export default function GestionTurnosAfiliado({
                   fullWidth
                   label="Médico / prestador"
                   value={filtros.prestadorId}
-                  onChange={(evento) => seleccionarPrestador(evento.target.value)}
+                  onChange={(evento) =>
+                    seleccionarPrestador(evento.target.value)
+                  }
                 >
                   <MenuItem value="">Todos</MenuItem>
                   {prestadoresDisponibles.map((prestador) => (
-                    <MenuItem key={obtenerId(prestador)} value={obtenerId(prestador)}>
+                    <MenuItem
+                      key={obtenerId(prestador)}
+                      value={obtenerId(prestador)}
+                    >
                       {prestador.nombre}
                     </MenuItem>
                   ))}
@@ -287,7 +299,10 @@ export default function GestionTurnosAfiliado({
                           ? `${direccion.calle} ${direccion.altura} · ${direccion.localidad}`
                           : 'Centro de atención'}
                       </Typography>
-                      <Button sx={{ mt: 1 }} onClick={() => reservarTurno(horario)}>
+                      <Button
+                        sx={{ mt: 1 }}
+                        onClick={() => reservarTurno(horario)}
+                      >
                         Reservar
                       </Button>
                     </CardContent>

@@ -18,6 +18,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { limpiarSesion, portalAfiliado } from '../../services/portal';
 import PropTypes from 'prop-types';
+import GestionTurnosAfiliado from '../../components/portales/GestionTurnosAfiliado';
 
 const FORMULARIO_VACIO = {
   tipo: 'RECETA',
@@ -248,21 +249,25 @@ export default function PortalAfiliado() {
     }
   };
 
-  const buscarDisponibilidad = async () => {
+  const buscarDisponibilidad = async (filtros = {}) => {
     if (!fechaTurno) {
       setError('Elegí una fecha para buscar turnos.');
-      return;
+      return null;
     }
 
     try {
       setError('');
-      const horarios = await portalAfiliado.obtenerDisponibilidad(fechaTurno);
+      const horarios = await portalAfiliado.obtenerDisponibilidad(
+        fechaTurno,
+        filtros
+      );
       setHorariosDisponibles(horarios);
+      return horarios;
     } catch (errorPeticion) {
       setError(obtenerMensajeError(errorPeticion));
+      return null;
     }
   };
-
   const reservarTurno = async (horario) => {
     try {
       await portalAfiliado.reservarTurno({
@@ -680,109 +685,19 @@ export default function PortalAfiliado() {
       )}
 
       {pestana === 2 && (
-        <Stack spacing={3}>
-          <Card>
-            <CardContent>
-              <Stack spacing={2}>
-                <Typography variant="h6">Buscar un turno</Typography>
-                <TextField
-                  select
-                  label="Integrante"
-                  value={afiliadoTurnoId}
-                  onChange={(evento) => setAfiliadoTurnoId(evento.target.value)}
-                >
-                  {integrantes.map((integrante) => (
-                    <MenuItem key={integrante._id} value={integrante._id}>
-                      {integrante.nombre} {integrante.apellido}
-                    </MenuItem>
-                  ))}
-                </TextField>
-                <TextField
-                  label="Fecha"
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  value={fechaTurno}
-                  onChange={(evento) => setFechaTurno(evento.target.value)}
-                />
-                <Button variant="contained" onClick={buscarDisponibilidad}>
-                  Buscar disponibilidad
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
-
-          {horariosDisponibles.length > 0 && (
-            <Box>
-              <Typography variant="h6" mb={1}>
-                Horarios disponibles
-              </Typography>
-              <Grid container spacing={2}>
-                {horariosDisponibles.map((horario) => (
-                  <Grid
-                    key={`${horario.agendaId}-${horario.hora}`}
-                    size={{ xs: 12, md: 6 }}
-                  >
-                    <Card>
-                      <CardContent>
-                        <Typography variant="h6">
-                          {horario.prestador?.nombre}
-                        </Typography>
-                        <Typography>
-                          {horario.especialidad?.nombre} · {horario.hora}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {horario.centro?.direccionId
-                            ? `${horario.centro.direccionId.calle} ${horario.centro.direccionId.altura}`
-                            : 'Centro de atención'}
-                        </Typography>
-                        <Button
-                          sx={{ mt: 1 }}
-                          onClick={() => reservarTurno(horario)}
-                        >
-                          Reservar
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          )}
-
-          <Box>
-            <Typography variant="h6" mb={1}>
-              Mis turnos
-            </Typography>
-            <Stack spacing={2}>
-              {turnos.length === 0 ? (
-                <Alert severity="info">No hay turnos registrados.</Alert>
-              ) : (
-                turnos.map((turno) => (
-                  <Card key={turno._id}>
-                    <CardContent>
-                      <Typography variant="h6">
-                        {turno.prestadorId?.nombre}
-                      </Typography>
-                      <Typography>
-                        {new Date(turno.fecha).toLocaleDateString('es-AR')} ·{' '}
-                        {turno.hora}
-                      </Typography>
-                      <Chip sx={{ mt: 1 }} label={turno.estado} />
-                      {turno.estado === 'RESERVADO' && (
-                        <Button
-                          sx={{ ml: 1, mt: 1 }}
-                          onClick={() => cancelarTurno(turno._id)}
-                        >
-                          Cancelar
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </Stack>
-          </Box>
-        </Stack>
+        <GestionTurnosAfiliado
+          integrantes={integrantes}
+          cartilla={cartilla}
+          fechaTurno={fechaTurno}
+          setFechaTurno={setFechaTurno}
+          afiliadoTurnoId={afiliadoTurnoId}
+          setAfiliadoTurnoId={setAfiliadoTurnoId}
+          horariosDisponibles={horariosDisponibles}
+          buscarDisponibilidad={buscarDisponibilidad}
+          reservarTurno={reservarTurno}
+          turnos={turnos}
+          cancelarTurno={cancelarTurno}
+        />
       )}
 
       {pestana === 3 && (
