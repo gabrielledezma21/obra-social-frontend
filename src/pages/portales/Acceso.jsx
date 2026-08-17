@@ -253,9 +253,7 @@ export default function AccesoPortales() {
             {pestana === 0 ? (
               <>
                 <TextField
-                  label={
-                    rolSeleccionado === 'ADMIN' ? 'Email' : 'DNI o email'
-                  }
+                  label={rolSeleccionado === 'ADMIN' ? 'Email' : 'DNI o email'}
                   value={identificador}
                   onChange={(evento) => setIdentificador(evento.target.value)}
                   required

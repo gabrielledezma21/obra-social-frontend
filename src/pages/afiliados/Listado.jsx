@@ -36,11 +36,7 @@ export default function AfiliadosListado() {
     const fetchAfiliados = async () => {
       setLoading(true);
       try {
-        const data = await obtenerAfiliadosListado(
-          filters,
-          page,
-          rowsPerPage
-        );
+        const data = await obtenerAfiliadosListado(filters, page, rowsPerPage);
         setRows(data.items || []);
         setTotal(data.total || 0);
       } catch (err) {

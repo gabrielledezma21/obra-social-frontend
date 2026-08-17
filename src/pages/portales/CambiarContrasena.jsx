@@ -11,10 +11,7 @@ import {
 } from '@mui/material';
 import IconoSeguridad from '@mui/icons-material/LockResetOutlined';
 import { useNavigate } from 'react-router-dom';
-import {
-  cambiarContrasena,
-  obtenerSesion,
-} from '../../services/portal';
+import { cambiarContrasena, obtenerSesion } from '../../services/portal';
 
 const obtenerRutaRol = (rol) => {
   if (rol === 'ADMIN') return '/';

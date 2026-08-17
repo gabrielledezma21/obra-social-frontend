@@ -2,12 +2,17 @@ import PropTypes from 'prop-types';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { obtenerSesion } from '../../services/portal';
 
-export default function ProtectorRuta({ rolesPermitidos, permitirCambioPendiente }) {
+export default function ProtectorRuta({
+  rolesPermitidos,
+  permitirCambioPendiente,
+}) {
   const ubicacion = useLocation();
   const { token, usuario } = obtenerSesion();
 
   if (!token || !usuario) {
-    return <Navigate to="/portal/acceso" replace state={{ desde: ubicacion }} />;
+    return (
+      <Navigate to="/portal/acceso" replace state={{ desde: ubicacion }} />
+    );
   }
 
   if (!rolesPermitidos.includes(usuario.rol)) {

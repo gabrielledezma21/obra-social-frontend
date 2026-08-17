@@ -157,11 +157,10 @@ test('paginación y búsqueda funcionan sobre datos adaptados', () => {
     { nombre: 'Carla Gomez', dni: '33333333' },
   ];
 
-  const filtrados = filtrarPorTexto(
-    elementos,
-    { textInputSearch: 'perez' },
-    [(elemento) => elemento.nombre, (elemento) => elemento.dni]
-  );
+  const filtrados = filtrarPorTexto(elementos, { textInputSearch: 'perez' }, [
+    (elemento) => elemento.nombre,
+    (elemento) => elemento.dni,
+  ]);
   assert.equal(filtrados.length, 1);
   assert.equal(filtrados[0].nombre, 'Bruno Perez');
 
@@ -176,19 +175,14 @@ test('paginación y búsqueda funcionan sobre datos adaptados', () => {
 });
 
 test('las rutas administrativas de listados, detalles y altas no regresan a URLs antiguas', async () => {
-  const [
-    afiliados,
-    prestadores,
-    agendas,
-    encabezadoListado,
-    aplicacion,
-  ] = await Promise.all([
-    leerFuente('src/utils/formats/afiliadoListado.js'),
-    leerFuente('src/utils/formats/prestadoresListado.js'),
-    leerFuente('src/utils/formats/agendaTurnosListado.js'),
-    leerFuente('src/components/common/lists/PageListHeader.jsx'),
-    leerFuente('src/App.jsx'),
-  ]);
+  const [afiliados, prestadores, agendas, encabezadoListado, aplicacion] =
+    await Promise.all([
+      leerFuente('src/utils/formats/afiliadoListado.js'),
+      leerFuente('src/utils/formats/prestadoresListado.js'),
+      leerFuente('src/utils/formats/agendaTurnosListado.js'),
+      leerFuente('src/components/common/lists/PageListHeader.jsx'),
+      leerFuente('src/App.jsx'),
+    ]);
 
   assert.match(afiliados, /\/administracion\/afiliados\/detalle\//);
   assert.match(afiliados, /numeroIntegrante/);
