@@ -78,8 +78,7 @@ export const rowsToSchedule = (rows = [], duration = null) => {
   rows.forEach((row) => {
     const rowDays = row.dias ?? [row.dia?.nombre ?? row.dia];
     rowDays.filter(Boolean).forEach((dayValue) => {
-      const day =
-        typeof dayValue === 'object' ? dayValue?.nombre : dayValue;
+      const day = typeof dayValue === 'object' ? dayValue?.nombre : dayValue;
       if (!day) return;
       const apiDay = API_DAY_NAMES[day] ?? day;
       if (!dias[apiDay]) dias[apiDay] = { atiende: false, bloques: [] };

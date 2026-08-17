@@ -1,9 +1,9 @@
 import dayjs from 'dayjs';
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
-dayjs.extend(isSameOrBefore);
-dayjs.extend(isSameOrAfter);
+const seleccionValida = (valor) =>
+  !valor ||
+  (typeof valor === 'object' &&
+    (valor.value !== undefined || valor.id !== undefined));
 
 export default function validateFiltrosAgendaTurnos(filtros) {
   const {
@@ -30,7 +30,7 @@ export default function validateFiltrosAgendaTurnos(filtros) {
     horaFin,
     creacionDesde,
     creacionHasta,
-  ].some((v) => !!v && v !== '');
+  ].some((valor) => valor !== null && valor !== undefined && valor !== '');
 
   if (!algunoCargado) {
     return {
@@ -40,49 +40,49 @@ export default function validateFiltrosAgendaTurnos(filtros) {
     };
   }
 
-  if (prestador && typeof prestador === 'string') {
+  if (!seleccionValida(prestador)) {
     return {
       field: 'prestador',
       message: 'Seleccioná un prestador válido de la lista.',
     };
   }
 
-  if (especialidad && typeof especialidad === 'string') {
+  if (!seleccionValida(especialidad)) {
     return {
       field: 'especialidad',
       message: 'Seleccioná una especialidad válida de la lista.',
     };
   }
 
-  if (provincia && typeof provincia === 'string') {
+  if (!seleccionValida(provincia)) {
     return {
       field: 'provincia',
       message: 'Seleccioná una provincia válida.',
     };
   }
 
-  if (dia && typeof provincia === 'string') {
+  if (!seleccionValida(localidad)) {
+    return {
+      field: 'localidad',
+      message: 'Seleccioná una localidad válida.',
+    };
+  }
+
+  if (!seleccionValida(dia)) {
     return {
       field: 'dia',
       message: 'Seleccioná un día válido.',
     };
   }
 
-  if (duracion && typeof provincia === 'string') {
+  if (!seleccionValida(duracion)) {
     return {
       field: 'duracion',
-      message: 'Seleccioná una duracion válida.',
+      message: 'Seleccioná una duración válida.',
     };
   }
 
-  if (localidad && localidad.length < 3) {
-    return {
-      field: 'localidad',
-      message: 'Ingrese al menos 3 caracteres para buscar una localidad.',
-    };
-  }
-
-  const hoy = dayjs();
+  const hoy = dayjs().endOf('day');
 
   if (creacionDesde && dayjs(creacionDesde).isAfter(hoy)) {
     return {
@@ -102,7 +102,7 @@ export default function validateFiltrosAgendaTurnos(filtros) {
     const desde = dayjs(creacionDesde);
     const hasta = dayjs(creacionHasta);
 
-    if (desde.isSame(hasta)) {
+    if (desde.isSame(hasta, 'day')) {
       return {
         field: 'creacionHasta',
         message: 'Las fechas no pueden ser iguales.',
@@ -118,17 +118,14 @@ export default function validateFiltrosAgendaTurnos(filtros) {
   }
 
   if (horaInicio && horaFin) {
-    const inicio = dayjs(horaInicio, 'HH:mm');
-    const fin = dayjs(horaFin, 'HH:mm');
-
-    if (inicio.isAfter(fin)) {
+    if (horaInicio > horaFin) {
       return {
         field: 'horaFin',
         message: 'El horario de inicio debe ser anterior al de fin.',
       };
     }
 
-    if (inicio.isSame(fin)) {
+    if (horaInicio === horaFin) {
       return {
         field: 'horaFin',
         message: 'El inicio y el fin no pueden ser iguales.',

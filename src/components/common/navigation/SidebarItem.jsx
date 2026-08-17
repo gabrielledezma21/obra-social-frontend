@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -9,92 +9,108 @@ import {
   Collapse,
   List,
 } from '@mui/material';
-import ExpandLessOutlinedIcon from '@mui/icons-material/ExpandLessOutlined';
-import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import IconoContraer from '@mui/icons-material/ExpandLessOutlined';
+import IconoExpandir from '@mui/icons-material/ExpandMoreOutlined';
+import {
+  Link as EnlaceRouter,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
 import './SidebarItem.css';
 
-export default function SidebarItem({
-  item,
-  open,
+export default function ElementoBarraLateral({
+  elemento,
+  abierto,
   esMobile,
   abrirMenu,
-  collapsed,
+  colapsado,
 }) {
-  const location = useLocation();
-  const [isOpen, setIsOpen] = useState(false);
+  const ubicacion = useLocation();
+  const navegar = useNavigate();
+  const [desplegado, setDesplegado] = useState(false);
 
-  const isChildActive = item.children?.some((child) =>
-    location.pathname.startsWith(child.route)
+  const tieneHijoActivo = elemento.hijos?.some((hijo) =>
+    ubicacion.pathname.startsWith(hijo.ruta)
   );
-  const isSelfActive = !item.children && location.pathname === item.route;
+  const estaActivo =
+    !elemento.hijos &&
+    (ubicacion.pathname === elemento.ruta ||
+      (elemento.ruta !== '/administracion' &&
+        ubicacion.pathname.startsWith(`${elemento.ruta}/`)));
 
   useEffect(() => {
-    setIsOpen(isChildActive);
-  }, [location.pathname]);
+    setDesplegado(tieneHijoActivo);
+  }, [ubicacion.pathname, tieneHijoActivo]);
 
-  const handleClick = (e) => {
-    if (item.children) {
-      const expandedView = open || esMobile;
-      if (expandedView) setIsOpen((prev) => !prev);
-      else abrirMenu(e, item.children);
+  const manejarClic = (evento) => {
+    if (!elemento.hijos) {
+      if (elemento.ruta) navegar(elemento.ruta);
+      return;
+    }
+
+    const vistaExpandida = abierto || esMobile;
+    if (vistaExpandida) {
+      setDesplegado((valorAnterior) => !valorAnterior);
+    } else {
+      abrirMenu(evento, elemento.hijos);
     }
   };
 
-  const collapsedView = collapsed;
-  const isActive = isSelfActive || (!open && isChildActive);
-  const hasChildren = !!item.children;
+  const vistaColapsada = colapsado;
+  const activo = estaActivo || (!abierto && tieneHijoActivo);
+  const tieneHijos = Boolean(elemento.hijos);
 
   return (
     <Box
-      className={`sidebar-item ${hasChildren ? 'has-children' : ''} ${
-        isActive ? 'active' : ''
-      } ${collapsedView ? 'collapsed' : ''} ${isOpen ? 'open' : ''}`}
+      className={`sidebar-item ${tieneHijos ? 'has-children' : ''} ${
+        activo ? 'active' : ''
+      } ${vistaColapsada ? 'collapsed' : ''} ${desplegado ? 'open' : ''}`}
     >
-      <Tooltip title={collapsedView ? item.label : ''} placement="right">
+      <Tooltip
+        title={vistaColapsada ? elemento.etiqueta : ''}
+        placement="right"
+      >
         <ListItemButton
-          onClick={handleClick}
-          component={!hasChildren ? RouterLink : 'div'}
-          to={!hasChildren ? item.route : undefined}
-          className={`sidebar-item-button ${isActive ? 'active' : ''}`}
+          onClick={manejarClic}
+          className={`sidebar-item-button ${activo ? 'active' : ''}`}
         >
           <ListItemIcon
-            className={`sidebar-item-icon ${isActive ? 'active' : ''}`}
+            className={`sidebar-item-icon ${activo ? 'active' : ''}`}
           >
-            {item.icon}
+            {elemento.icono}
           </ListItemIcon>
 
-          {(open || esMobile) && (
+          {(abierto || esMobile) && (
             <ListItemText
-              primary={item.label}
-              className={`sidebar-item-text ${isActive ? 'active' : ''}`}
+              primary={elemento.etiqueta}
+              className={`sidebar-item-text ${activo ? 'active' : ''}`}
               primaryTypographyProps={{ fontSize: '1.1rem' }}
             />
           )}
 
-          {(open || esMobile) &&
-            hasChildren &&
-            (isOpen ? <ExpandLessOutlinedIcon /> : <ExpandMoreOutlinedIcon />)}
+          {(abierto || esMobile) &&
+            tieneHijos &&
+            (desplegado ? <IconoContraer /> : <IconoExpandir />)}
         </ListItemButton>
       </Tooltip>
 
-      {(open || esMobile) && hasChildren && (
-        <Collapse in={isOpen} timeout="auto" unmountOnExit>
+      {(abierto || esMobile) && tieneHijos && (
+        <Collapse in={desplegado} timeout="auto" unmountOnExit>
           <List component="div" disablePadding className="sidebar-sublist">
-            {item.children.map((child, i) => {
-              const activeChild = location.pathname.startsWith(child.route);
+            {elemento.hijos.map((hijo, indice) => {
+              const hijoActivo = ubicacion.pathname.startsWith(hijo.ruta);
               return (
                 <ListItemButton
-                  key={i}
-                  component={RouterLink}
-                  to={child.route}
-                  className={`sidebar-subitem ${activeChild ? 'active' : ''}`}
+                  key={indice}
+                  component={EnlaceRouter}
+                  to={hijo.ruta}
+                  className={`sidebar-subitem ${hijoActivo ? 'active' : ''}`}
                 >
                   <ListItemIcon className="sidebar-subitem-icon">
-                    {child.icon}
+                    {hijo.icono}
                   </ListItemIcon>
                   <ListItemText
-                    primary={child.label}
+                    primary={hijo.etiqueta}
                     className="sidebar-subitem-text"
                     primaryTypographyProps={{ fontSize: '0.95rem' }}
                   />
@@ -108,22 +124,22 @@ export default function SidebarItem({
   );
 }
 
-SidebarItem.propTypes = {
-  item: PropTypes.shape({
-    key: PropTypes.string.isRequired,
-    label: PropTypes.string.isRequired,
-    icon: PropTypes.node.isRequired,
-    route: PropTypes.string,
-    children: PropTypes.arrayOf(
+ElementoBarraLateral.propTypes = {
+  elemento: PropTypes.shape({
+    clave: PropTypes.string.isRequired,
+    etiqueta: PropTypes.string.isRequired,
+    icono: PropTypes.node.isRequired,
+    ruta: PropTypes.string,
+    hijos: PropTypes.arrayOf(
       PropTypes.shape({
-        label: PropTypes.string.isRequired,
-        icon: PropTypes.node,
-        route: PropTypes.string.isRequired,
+        etiqueta: PropTypes.string.isRequired,
+        icono: PropTypes.node,
+        ruta: PropTypes.string.isRequired,
       })
     ),
   }).isRequired,
-  open: PropTypes.bool.isRequired,
+  abierto: PropTypes.bool.isRequired,
   esMobile: PropTypes.bool.isRequired,
   abrirMenu: PropTypes.func.isRequired,
-  collapsed: PropTypes.bool,
+  colapsado: PropTypes.bool,
 };

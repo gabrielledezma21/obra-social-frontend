@@ -2,13 +2,13 @@ import api from './api';
 import { formatPrestadoresListado } from '../utils/formats/prestadoresListado';
 import { formatPrestadorDetalle } from '../utils/formats/prestadoresDetalle';
 import {
-  filterByText,
   getId,
   paginate,
   prestadorToLegacy,
   provinceName,
   rowsToSchedule,
 } from './apiAdapters';
+import { filtrarPrestadores } from '../utils/filtrosListados';
 
 const toListItem = (raw) => {
   const legacy = prestadorToLegacy(raw);
@@ -26,11 +26,8 @@ export const getPrestadoresListado = async (
 ) => {
   try {
     const { data } = await api.get('/prestadores');
-    const filtered = filterByText(Array.isArray(data) ? data : [], filters, [
-      (item) => item.nombre,
-      (item) => item.cuilCuit,
-      (item) => (item.especialidades ?? []).map((e) => e.nombre).join(' '),
-    ]);
+    const prestadores = Array.isArray(data) ? data : [];
+    const filtered = filtrarPrestadores(prestadores, filters);
     return formatPrestadoresListado(
       paginate(filtered.map(toListItem), page, limit)
     );

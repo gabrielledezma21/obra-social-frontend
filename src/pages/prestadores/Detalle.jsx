@@ -83,7 +83,7 @@ export default function DetallePrestador() {
       window.history.replaceState(
         {},
         document.title,
-        `/prestadores/detalle/${id}`
+        `/administracion/prestadores/detalle/${id}`
       );
     }
   }, [location, id]);

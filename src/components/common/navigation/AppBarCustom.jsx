@@ -1,9 +1,18 @@
-import { AppBar, Toolbar, IconButton, Box } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import { AppBar, Toolbar, IconButton, Box, Button } from '@mui/material';
+import IconoMenu from '@mui/icons-material/Menu';
 import PropTypes from 'prop-types';
-import BrandLogo from '../../common/BrandLogo';
+import { useNavigate } from 'react-router-dom';
+import LogoMarca from '../../common/BrandLogo';
+import { limpiarSesion } from '../../../services/portal';
 
-export default function AppBarCustom({ onMenuClick }) {
+export default function BarraSuperior({ alHacerClicMenu }) {
+  const navegar = useNavigate();
+
+  const cerrarSesion = () => {
+    limpiarSesion();
+    navegar('/portal/acceso');
+  };
+
   return (
     <AppBar
       position="fixed"
@@ -11,7 +20,7 @@ export default function AppBarCustom({ onMenuClick }) {
         backgroundColor: '#0b111e',
         color: '#fff',
         boxShadow: 'none',
-        zIndex: (theme) => theme.zIndex.drawer + 1,
+        zIndex: (tema) => tema.zIndex.drawer + 1,
       }}
     >
       <Toolbar
@@ -23,16 +32,19 @@ export default function AppBarCustom({ onMenuClick }) {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton onClick={onMenuClick} color="inherit">
-            <MenuIcon />
+          <IconButton onClick={alHacerClicMenu} color="inherit">
+            <IconoMenu />
           </IconButton>
-          <BrandLogo clickable size="medium" />
+          <LogoMarca clickable size="medium" />
         </Box>
+        <Button color="inherit" onClick={cerrarSesion}>
+          Cerrar sesión
+        </Button>
       </Toolbar>
     </AppBar>
   );
 }
 
-AppBarCustom.propTypes = {
-  onMenuClick: PropTypes.func.isRequired,
+BarraSuperior.propTypes = {
+  alHacerClicMenu: PropTypes.func.isRequired,
 };

@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import PageListHeader from '../../components/common/lists/PageListHeader';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import ListadoAfiliadosTable from '../../components/afiliados/ListadoAfiliadosTable';
-import { getTitulares } from '../../services/afiliado';
+import { obtenerAfiliadosListado } from '../../services/afiliado';
 import SuccessSnackbar from '../../components/common/SuccessSnackbar';
 import { useLocation } from 'react-router-dom';
 
@@ -24,7 +24,11 @@ export default function AfiliadosListado() {
     const params = new URLSearchParams(location.search);
     if (params.get('deleted') === 'true') {
       setShowSuccess(true);
-      window.history.replaceState({}, document.title, '/afiliados');
+      window.history.replaceState(
+        {},
+        document.title,
+        '/administracion/afiliados/listado'
+      );
     }
   }, [location]);
 
@@ -32,7 +36,7 @@ export default function AfiliadosListado() {
     const fetchAfiliados = async () => {
       setLoading(true);
       try {
-        const data = await getTitulares(filters, page, rowsPerPage);
+        const data = await obtenerAfiliadosListado(filters, page, rowsPerPage);
         setRows(data.items || []);
         setTotal(data.total || 0);
       } catch (err) {

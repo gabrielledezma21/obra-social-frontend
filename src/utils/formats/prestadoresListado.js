@@ -32,7 +32,7 @@ export const formatPrestadoresListado = (data) => {
         telefonos,
         emails,
         createdAt: p.createdAt || null,
-        url: p.id ? `/prestadores/detalle/${p.id}` : null,
+        url: p.id ? `/administracion/prestadores/detalle/${p.id}` : null,
       };
     });
 

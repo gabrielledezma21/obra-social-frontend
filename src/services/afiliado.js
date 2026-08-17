@@ -1,83 +1,115 @@
-import api from './api';
-import { formatAfiliadosListado } from '../utils/formats/afiliadoListado';
+import clienteApi from './api';
+import { formatAfiliadosListado as formatearListadoAfiliados } from '../utils/formats/afiliadoListado';
 import {
-  afiliadoToLegacy,
-  filterByText,
-  getId,
-  paginate,
-  provinceName,
+  afiliadoToLegacy as adaptarAfiliadoLegado,
+  getId as obtenerId,
+  paginate as paginar,
+  provinceName as obtenerNombreProvincia,
 } from './apiAdapters';
+import { filtrarAfiliados } from '../utils/filtrosListados';
 
-const toDate = (value) => value?.format?.('YYYY-MM-DD') ?? value ?? null;
+const convertirAFecha = (valor) =>
+  valor?.format?.('YYYY-MM-DD') ?? valor ?? null;
 
-const documentValue = (value) => {
-  const type = value?.tipo ?? value?.id ?? value ?? 'DNI';
-  const aliases = { Pasaporte: 'CE', 'Libreta cívica': 'LC' };
-  return aliases[type] ?? type;
+const obtenerTipoDocumento = (valor) => {
+  const tipo = valor?.tipo ?? valor?.id ?? valor ?? 'DNI';
+  const equivalencias = { Pasaporte: 'CE', 'Libreta cívica': 'LC' };
+  return equivalencias[tipo] ?? tipo;
 };
 
-const relationshipValue = (value) => {
-  const relationship = value?.relacion ?? value?.id ?? value ?? 'Titular';
-  return relationship === 'Cónyuge' ? 'Conyuge' : relationship;
+const obtenerParentesco = (valor) => {
+  const parentesco = valor?.relacion ?? valor?.id ?? valor ?? 'Titular';
+  return parentesco === 'Cónyuge' ? 'Conyuge' : parentesco;
 };
 
-const addressPayload = (addresses = []) => {
-  const address = addresses[0] ?? {};
-  return {
-    calle: address.calle,
-    altura: Number(address.altura),
-    pisoDepto: address.pisoDepto || null,
-    codigoPostal: address.codigoPostal,
-    localidad: address.localidad,
-    provincia: provinceName(address.provincia ?? address.provinciaId),
-  };
-};
-
-const createPayload = (form, options = {}) => ({
-  nombre: form.nombre,
-  apellido: form.apellido,
-  tipoDocumento: documentValue(form.tipoDocumento),
-  dni: Number(form.numeroDocumento),
-  parentesco: relationshipValue(options.parentesco ?? form.parentesco),
-  situacionesTerapeuticas: (form.situacionesTerapeuticas ?? [])
-    .map((item) => getId(item.situacion ?? item))
-    .filter(Boolean),
-  emails: form.emails ?? [],
-  telefonos: form.telefonos ?? [],
-  direccion: addressPayload(form.direcciones),
-  plan: String(
-    options.plan ?? form.cobertura?.plan ?? form.cobertura?.id ?? ''
+const construirDireccion = (direccion = {}) => ({
+  calle: direccion.calle,
+  altura: Number(direccion.altura),
+  pisoDepto: direccion.pisoDepto || null,
+  codigoPostal: direccion.codigoPostal,
+  localidad: direccion.localidad,
+  provincia: obtenerNombreProvincia(
+    direccion.provincia ?? direccion.provinciaId
   ),
-  fechaAlta: toDate(options.fechaAlta ?? form.vigenciaInicio),
-  afiliadoTitularId: options.afiliadoTitularId ?? null,
 });
 
-export const createAfiliado = async (afiliadoData) => {
-  const titularPayload = createPayload(afiliadoData, { parentesco: 'Titular' });
+const construirDirecciones = (direcciones = []) =>
+  direcciones.filter(Boolean).map(construirDireccion);
+
+const construirDatosAfiliado = (formulario, opciones = {}) => ({
+  nombre: formulario.nombre,
+  apellido: formulario.apellido,
+  fechaNacimiento: convertirAFecha(formulario.fechaNacimiento),
+  tipoDocumento: obtenerTipoDocumento(formulario.tipoDocumento),
+  dni: Number(formulario.numeroDocumento),
+  parentesco: obtenerParentesco(opciones.parentesco ?? formulario.parentesco),
+  situacionesTerapeuticas: (formulario.situacionesTerapeuticas ?? [])
+    .map((elemento) => obtenerId(elemento.situacion ?? elemento))
+    .filter(Boolean),
+  emails: formulario.emails ?? [],
+  telefonos: formulario.telefonos ?? [],
+  direcciones: construirDirecciones(formulario.direcciones),
+  plan: String(
+    opciones.plan ??
+      formulario.cobertura?.plan ??
+      formulario.cobertura?.id ??
+      ''
+  ),
+  fechaAlta: convertirAFecha(opciones.fechaAlta ?? formulario.vigenciaInicio),
+  afiliadoTitularId: opciones.afiliadoTitularId ?? null,
+});
+
+const obtenerListado = async (
+  filtros = {},
+  pagina = 0,
+  limite = 10,
+  soloTitulares = false
+) => {
+  const { data: datos } = await clienteApi.get('/afiliados');
+  const afiliadosCrudos = (Array.isArray(datos) ? datos : []).filter(
+    (elemento) => !soloTitulares || elemento.parentesco === 'Titular'
+  );
+  const afiliadosFiltrados = filtrarAfiliados(afiliadosCrudos, filtros).map(
+    adaptarAfiliadoLegado
+  );
+
+  return formatearListadoAfiliados(paginar(afiliadosFiltrados, pagina, limite));
+};
+
+// Esta API pública pertenece al frontend original y se conserva únicamente
+// para no romper sus consumidores heredados. Toda la implementación nueva y
+// los portales agregados en esta mejora utilizan identificadores en español.
+export const createAfiliado = async (datosAfiliado) => {
+  const datosTitular = construirDatosAfiliado(datosAfiliado, {
+    parentesco: 'Titular',
+  });
+
   if (
-    !titularPayload.tipoDocumento ||
-    !titularPayload.dni ||
-    !titularPayload.nombre ||
-    !titularPayload.apellido ||
-    !titularPayload.plan ||
-    !titularPayload.fechaAlta
+    !datosTitular.tipoDocumento ||
+    !datosTitular.dni ||
+    !datosTitular.nombre ||
+    !datosTitular.apellido ||
+    !datosTitular.fechaNacimiento ||
+    !datosTitular.plan ||
+    !datosTitular.fechaAlta ||
+    !datosTitular.direcciones.length
   ) {
     throw new Error('Faltan datos obligatorios para crear el afiliado');
   }
 
-  const { data: titular } = await api.post('/afiliados', titularPayload);
-  const titularId = getId(titular);
+  const { data: titular } = await clienteApi.post('/afiliados', datosTitular);
+  const titularId = obtenerId(titular);
 
   await Promise.all(
-    (afiliadoData.grupoFamiliar ?? []).map((relative) =>
-      api.post(
+    (datosAfiliado.grupoFamiliar ?? []).map((familiar) =>
+      clienteApi.post(
         '/afiliados',
-        createPayload(relative, {
+        construirDatosAfiliado(familiar, {
           afiliadoTitularId: titularId,
-          plan: titularPayload.plan,
-          fechaAlta: relative.usaMismaVigenciaTitular
-            ? titularPayload.fechaAlta
-            : relative.vigenciaInicio,
+          plan: datosTitular.plan,
+          fechaAlta: familiar.usaMismaVigenciaTitular
+            ? datosTitular.fechaAlta
+            : familiar.vigenciaInicio,
         })
       )
     )
@@ -86,89 +118,103 @@ export const createAfiliado = async (afiliadoData) => {
   return { ...titular, id: titularId };
 };
 
-export const deleteAfiliadoById = async (id, fechaBaja = null) => {
-  if (fechaBaja) return api.put(`/afiliados/${id}`, { fechaBaja });
-  return api.delete(`/afiliados/${id}`);
-};
+export const deleteAfiliadoById = async (id, fechaBaja = null) =>
+  fechaBaja
+    ? clienteApi.put(`/afiliados/${id}`, { fechaBaja })
+    : clienteApi.delete(`/afiliados/${id}`);
 
-export const modificarFechaBajaAfiliado = async (id, fechaBaja) => {
-  const { data } = await api.put(`/afiliados/${id}`, { fechaBaja });
-  return data;
-};
+export const modificarFechaBajaAfiliado = async (
+  id,
+  fechaBaja,
+  aplicarAGrupoFamiliar = false
+) =>
+  (
+    await clienteApi.put(`/afiliados/${id}`, {
+      fechaBaja,
+      aplicarAGrupoFamiliar,
+    })
+  ).data;
 
-export const reincorporarAfiliado = async (id) => {
-  const { data } = await api.put(`/afiliados/${id}`, { fechaBaja: null });
-  return data;
-};
+export const reincorporarAfiliado = async (
+  id,
+  reincorporarGrupoFamiliar = false
+) =>
+  (
+    await clienteApi.put(`/afiliados/${id}`, {
+      fechaBaja: null,
+      aplicarAGrupoFamiliar: reincorporarGrupoFamiliar,
+    })
+  ).data;
 
-export const getTitulares = async (filters = {}, page = 0, limit = 10) => {
+export const obtenerAfiliadosListado = async (
+  filtros = {},
+  pagina = 0,
+  limite = 10
+) => {
   try {
-    const { data } = await api.get('/afiliados');
-    const legacy = (Array.isArray(data) ? data : [])
-      .filter((item) => item.parentesco === 'Titular')
-      .map(afiliadoToLegacy);
-    const filtered = filterByText(legacy, filters, [
-      (item) => `${item.nombre} ${item.apellido}`,
-      (item) => item.numeroDocumento,
-      (item) => item.Contrato?.nAfiliado,
-    ]);
-    return formatAfiliadosListado(paginate(filtered, page, limit));
-  } catch (err) {
-    console.error('Error al obtener listado de afiliados:', err);
-    throw err;
+    return await obtenerListado(filtros, pagina, limite, false);
+  } catch (error) {
+    console.error('Error al obtener listado de afiliados:', error);
+    throw error;
+  }
+};
+
+export const getTitulares = async (filtros = {}, pagina = 0, limite = 10) => {
+  try {
+    return await obtenerListado(filtros, pagina, limite, true);
+  } catch (error) {
+    console.error('Error al obtener listado de titulares:', error);
+    throw error;
   }
 };
 
 export const getAfiliadoById = async (id) => {
   if (!id) throw new Error('Se requiere un ID de afiliado');
-  const { data } = await api.get(`/afiliados/${id}`);
-  return afiliadoToLegacy(data);
+  const { data: datos } = await clienteApi.get(`/afiliados/${id}`);
+  return adaptarAfiliadoLegado(datos);
 };
 
 export const getReporteAfiliadoById = async () => {
   throw new Error('La API actual todavía no ofrece reportes en PDF.');
 };
 
-export const updateAfiliadoDatosPersonales = async (id, payload) => {
-  const { data } = await api.put(`/afiliados/${id}`, {
-    tipoDocumento: documentValue(payload.tipoDocumentoId),
-    dni: Number(payload.numeroDocumento),
-    nombre: payload.nombre,
-    apellido: payload.apellido,
-    fechaAlta: payload.vigenciaInicio,
-    fechaBaja: payload.tieneFechaBaja ? payload.vigenciaFin : null,
-  });
-  return data;
-};
-
-export const updateAfiliadoCobertura = async (id, payload) => {
-  const { data } = await api.put(`/afiliados/${id}`, {
-    plan: String(payload.planId),
-  });
-  return data;
-};
-
-export const updateAfiliadoDatosContacto = async (id, payload) => {
-  const { data } = await api.put(`/afiliados/${id}`, payload);
-  return data;
-};
-
-export const updateAfiliadoDirecciones = async (id, payload) => {
-  const { data } = await api.put(`/afiliados/${id}`, {
-    direccion: addressPayload(payload.direcciones),
-  });
-  return data;
-};
-
-export const addDependiente = async (idAfiliado, dependienteData) => {
-  const titular = await getAfiliadoById(idAfiliado);
-  const { data } = await api.post(
-    '/afiliados',
-    createPayload(dependienteData, {
-      afiliadoTitularId: idAfiliado,
-      plan: titular.Contrato?.plan?.plan,
-      fechaAlta: titular.vigenciaInicio,
+export const updateAfiliadoDatosPersonales = async (id, datos) =>
+  (
+    await clienteApi.put(`/afiliados/${id}`, {
+      tipoDocumento: obtenerTipoDocumento(datos.tipoDocumentoId),
+      dni: Number(datos.numeroDocumento),
+      nombre: datos.nombre,
+      apellido: datos.apellido,
+      fechaNacimiento: convertirAFecha(datos.fechaNacimiento),
+      fechaAlta: datos.vigenciaInicio,
+      fechaBaja: datos.tieneFechaBaja ? datos.vigenciaFin : null,
     })
-  );
-  return data;
+  ).data;
+
+export const updateAfiliadoCobertura = async (id, datos) =>
+  (await clienteApi.put(`/afiliados/${id}`, { plan: String(datos.planId) }))
+    .data;
+
+export const updateAfiliadoDatosContacto = async (id, datos) =>
+  (await clienteApi.put(`/afiliados/${id}`, datos)).data;
+
+export const updateAfiliadoDirecciones = async (id, datos) =>
+  (
+    await clienteApi.put(`/afiliados/${id}`, {
+      direcciones: construirDirecciones(datos.direcciones),
+    })
+  ).data;
+
+export const addDependiente = async (idAfiliado, datosDependiente) => {
+  const titular = await getAfiliadoById(idAfiliado);
+  return (
+    await clienteApi.post(
+      '/afiliados',
+      construirDatosAfiliado(datosDependiente, {
+        afiliadoTitularId: idAfiliado,
+        plan: titular.Contrato?.plan?.plan,
+        fechaAlta: titular.vigenciaInicio,
+      })
+    )
+  ).data;
 };

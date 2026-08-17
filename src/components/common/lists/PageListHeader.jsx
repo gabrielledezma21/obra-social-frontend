@@ -22,19 +22,19 @@ const headerConfig = {
   'agenda-de-turnos': {
     title: 'Agendas de turnos',
     placeholder: 'Buscar por prestador, especialidad...',
-    addLink: '/agenda-turnos/alta',
+    addLink: '/administracion/agenda-turnos/alta',
     labels: { singular: 'agenda de turnos', plural: 'agendas de turnos' },
   },
   prestador: {
     title: 'Prestadores',
     placeholder: 'Buscar por nombre, código postal, CUIT/CUIL...',
-    addLink: '/prestadores/alta',
+    addLink: '/administracion/prestadores/alta',
     labels: { singular: 'prestador', plural: 'prestadores' },
   },
   afiliado: {
     title: 'Afiliados',
     placeholder: 'Buscar por nombre, apellido o DNI...',
-    addLink: '/afiliados/alta',
+    addLink: '/administracion/afiliados/alta',
     labels: { singular: 'afiliado', plural: 'afiliados' },
   },
 };
@@ -45,29 +45,40 @@ export default function PageListHeader({ type, onSearch, total }) {
   const [filterValues, setFilterValues] = useState({});
   const [openFilter, setOpenFilter] = useState(false);
   const lastSearchRef = useRef('');
+  const onSearchRef = useRef(onSearch);
+  const filterValuesRef = useRef(filterValues);
 
   useEffect(() => {
-    if (onSearch) onSearch({});
-  }, []);
+    onSearchRef.current = onSearch;
+  }, [onSearch]);
 
   useEffect(() => {
-    if (!onSearch) return;
+    filterValuesRef.current = filterValues;
+  }, [filterValues]);
+
+  useEffect(() => {
+    if (!onSearchRef.current) return;
+
     const handler = setTimeout(() => {
       const trimmed = searchTerm.trim();
       if (trimmed !== lastSearchRef.current) {
         lastSearchRef.current = trimmed;
-        onSearch({ textInputSearch: trimmed, ...filterValues });
+        onSearchRef.current({
+          textInputSearch: trimmed,
+          ...filterValuesRef.current,
+        });
       }
     }, 500);
+
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  useEffect(() => {
-    onSearch({
+  const ejecutarBusqueda = (valoresFiltros = filterValues) => {
+    onSearchRef.current?.({
       textInputSearch: searchTerm.trim(),
-      ...filterValues,
+      ...valoresFiltros,
     });
-  }, [filterValues]);
+  };
 
   const handleFilterApply = (values) => {
     setOpenFilter(false);
@@ -77,18 +88,19 @@ export default function PageListHeader({ type, onSearch, total }) {
     if (values.__clearFilters) {
       setFilterValues({});
       setSearchTerm('');
-      onSearch({});
+      lastSearchRef.current = '';
+      onSearchRef.current?.({});
       return;
     }
 
     if (Object.keys(values).length === 0) {
       setFilterValues({});
-      onSearch({ textInputSearch: searchTerm.trim() });
+      ejecutarBusqueda({});
       return;
     }
 
     setFilterValues(values);
-    onSearch({ textInputSearch: searchTerm.trim(), ...values });
+    ejecutarBusqueda(values);
   };
 
   const labelConfig = config.labels;
@@ -101,11 +113,10 @@ export default function PageListHeader({ type, onSearch, total }) {
 
   const handleChipDelete = (chip) => {
     const nuevosValoresFiltros = { ...filterValues };
-
     delete nuevosValoresFiltros[chip];
 
     setFilterValues(nuevosValoresFiltros);
-    onSearch({ textInputSearch: searchTerm.trim(), ...nuevosValoresFiltros });
+    ejecutarBusqueda(nuevosValoresFiltros);
   };
 
   const obtenerFiltrosActivos = () => {
@@ -121,7 +132,7 @@ export default function PageListHeader({ type, onSearch, total }) {
       const claves = ['provincia', 'tipoPrestador', 'especialidad'];
 
       activos.push({
-        key: key,
+        key,
         name: camposConfig.label,
         value: claves.includes(key) ? value.label : (value.value ?? value),
       });
@@ -176,10 +187,8 @@ export default function PageListHeader({ type, onSearch, total }) {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
-                  onSearch({
-                    textInputSearch: searchTerm.trim(),
-                    ...filterValues,
-                  });
+                  lastSearchRef.current = searchTerm.trim();
+                  ejecutarBusqueda();
                 }
               }}
               placeholder={config.placeholder}
@@ -216,7 +225,7 @@ export default function PageListHeader({ type, onSearch, total }) {
       </Typography>
 
       {filtrosActivos.length > 0 && (
-        <Stack direction="row" flexWrap={'wrap'} sx={{ rowGap: 1, mt: 1 }}>
+        <Stack direction="row" flexWrap="wrap" sx={{ rowGap: 1, mt: 1 }}>
           {filtrosActivos.map((filtro) => (
             <Chip
               key={filtro.key}

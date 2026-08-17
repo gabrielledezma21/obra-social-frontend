@@ -24,7 +24,11 @@ export default function AgendaTurnosListado() {
     const params = new URLSearchParams(location.search);
     if (params.get('deleted') === 'true') {
       setShowSuccess(true);
-      window.history.replaceState({}, document.title, '/agenda-de-turnos');
+      window.history.replaceState(
+        {},
+        document.title,
+        '/administracion/agenda-turnos/listado'
+      );
     }
   }, [location]);
 

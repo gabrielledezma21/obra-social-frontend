@@ -210,7 +210,9 @@ export default function AltaTurnosForm() {
         open={showError}
         autoHideDuration={4000}
         onClose={() => setShowError(false)}
-        message={errorMessage || 'Ocurrió un error al guardar la agenda de turnos.'}
+        message={
+          errorMessage || 'Ocurrió un error al guardar la agenda de turnos.'
+        }
       />
     </Box>
   );

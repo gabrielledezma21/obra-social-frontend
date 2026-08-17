@@ -1,0 +1,38 @@
+name: Pruebas frontend
+
+on:
+  push:
+    branches:
+      - agent/integrar-aplicaciones-2-3
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validacion-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Auditar dependencias altas
+        run: npm audit --audit-level=high
+
+      - name: Ejecutar pruebas de regresión
+        run: npm test
+
+      - name: Validar ESLint
+        run: npm run lint
+
+      - name: Compilar aplicación
+        run: npm run build

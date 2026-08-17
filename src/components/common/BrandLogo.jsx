@@ -2,15 +2,18 @@ import { Box, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
-export default function BrandLogo({ size = 'medium', clickable = true }) {
+export default function BrandLogo({
+  size = 'medium',
+  clickable = true,
+  compacto = false,
+}) {
   const sizes = {
-    small: { fontSize: '0.9rem', imgWidth: 28 },
+    small: { fontSize: '0.9rem', imgWidth: compacto ? 48 : 28 },
     medium: { fontSize: '1.1rem', imgWidth: 32 },
     large: { fontSize: '1.2rem', imgWidth: 40 },
   };
 
   const { fontSize, imgWidth } = sizes[size] || sizes.medium;
-
   const Wrapper = clickable ? RouterLink : Box;
 
   return (
@@ -20,6 +23,7 @@ export default function BrandLogo({ size = 'medium', clickable = true }) {
         textDecoration: 'none',
         display: 'flex',
         alignItems: 'center',
+        justifyContent: compacto ? 'center' : 'flex-start',
         gap: '0.5rem',
         cursor: clickable ? 'pointer' : 'default',
       }}
@@ -31,16 +35,18 @@ export default function BrandLogo({ size = 'medium', clickable = true }) {
         className="navbar-logo"
         style={{ width: imgWidth, height: 'auto' }}
       />
-      <Typography
-        sx={{
-          color: '#00AEEF',
-          fontSize,
-          fontWeight: 500,
-          lineHeight: 1,
-        }}
-      >
-        Med<span style={{ color: '#FFFFFF' }}>Integral</span>
-      </Typography>
+      {!compacto && (
+        <Typography
+          sx={{
+            color: '#00AEEF',
+            fontSize,
+            fontWeight: 500,
+            lineHeight: 1,
+          }}
+        >
+          Med<span style={{ color: '#FFFFFF' }}>Integral</span>
+        </Typography>
+      )}
     </Wrapper>
   );
 }
@@ -48,4 +54,5 @@ export default function BrandLogo({ size = 'medium', clickable = true }) {
 BrandLogo.propTypes = {
   size: PropTypes.oneOf(['small', 'medium', 'large']),
   clickable: PropTypes.bool,
+  compacto: PropTypes.bool,
 };

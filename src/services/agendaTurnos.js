@@ -2,9 +2,9 @@ import api from './api';
 import { formatAgendaTurnosListado } from '../utils/formats/agendaTurnosListado';
 import { formatAgendaTurnosDetalle } from '../utils/formats/agendaTurnosDetalle';
 import { formatAgendaTurnosPrestador } from '../utils/formats/agendaTurnosPrestador';
+import { filtrarAgendas } from '../utils/filtrosAgendas';
 import {
   agendaToLegacy,
-  filterByText,
   getId,
   paginate,
   prestadorToLegacy,
@@ -22,7 +22,9 @@ export const createAgendaTurnos = async ({
   const centroDeAtencionId = getId(direccion);
 
   if (!prestadorId || !especialidadId || !centroDeAtencionId) {
-    throw new Error('No se pudieron identificar el prestador, la especialidad o el centro de atención');
+    throw new Error(
+      'No se pudieron identificar el prestador, la especialidad o el centro de atención'
+    );
   }
   const { data } = await api.post('/agendas', {
     prestadorId,
@@ -40,13 +42,9 @@ export const getAgendaTurnosListado = async (
 ) => {
   try {
     const { data } = await api.get('/agendas');
-    const legacy = (Array.isArray(data) ? data : []).map(agendaToLegacy);
-    const filtered = filterByText(legacy, filters, [
-      (item) => item.prestador?.nombre,
-      (item) => item.especialidad?.nombre,
-      (item) => item.direccion?.localidad,
-    ]);
-    return formatAgendaTurnosListado(paginate(filtered, page, limit));
+    const agendas = (Array.isArray(data) ? data : []).map(agendaToLegacy);
+    const agendasFiltradas = filtrarAgendas(agendas, filters);
+    return formatAgendaTurnosListado(paginate(agendasFiltradas, page, limit));
   } catch (err) {
     console.error('Error al obtener listado de agendas de turnos:', err);
     throw err;
