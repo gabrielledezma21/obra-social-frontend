@@ -28,6 +28,8 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import LogoMarca from '../components/common/BrandLogo';
 import PiePagina from '../components/Footer';
 import { limpiarSesion, obtenerSesion } from '../services/portal';
+import '../components/common/navigation/Sidebar.css';
+import '../components/common/navigation/SidebarItem.css';
 
 const ANCHO_BARRA_ABIERTA = 280;
 const ANCHO_BARRA_CERRADA = 70;
@@ -116,7 +118,10 @@ export default function DisenoPortal() {
   };
 
   const contenidoBarra = (abierta) => (
-    <List sx={{ px: 0.75, pt: 1, flexGrow: 1 }}>
+    <List
+      className={`sidebar-list ${abierta ? '' : 'sidebar-collapsed'}`}
+      sx={{ px: 0, pt: 0, flexGrow: 0 }}
+    >
       {elementos.map((elemento) => {
         const Icono = elemento.icono;
         const seleccionado = elementoActivo === elemento.clave;
@@ -126,33 +131,24 @@ export default function DisenoPortal() {
             key={elemento.clave}
             selected={seleccionado}
             onClick={() => seleccionarElemento(elemento)}
+            className={`sidebar-item-button ${seleccionado ? 'active' : ''}`}
             sx={{
-              minHeight: 44,
-              mb: 0.25,
-              px: abierta ? 1.5 : 1,
-              py: 0.5,
-              borderRadius: 1.5,
               justifyContent: abierta ? 'initial' : 'center',
-              color: seleccionado ? '#fff' : 'rgba(255,255,255,0.86)',
-              backgroundColor: seleccionado
-                ? 'rgba(0,177,234,0.18)'
-                : 'transparent',
+              width: abierta ? 'auto' : 48,
+              mx: abierta ? '6px' : 'auto',
               '&.Mui-selected': {
-                backgroundColor: 'rgba(0,177,234,0.18)',
+                backgroundColor: 'rgba(0, 174, 239, 0.15)',
               },
-              '&.Mui-selected:hover, &:hover': {
-                backgroundColor: 'rgba(0,177,234,0.26)',
+              '&.Mui-selected:hover': {
+                backgroundColor: 'rgba(0, 174, 239, 0.22)',
               },
             }}
           >
             <ListItemIcon
+              className={`sidebar-item-icon ${seleccionado ? 'active' : ''}`}
               sx={{
-                minWidth: abierta ? 36 : 0,
-                color: seleccionado ? COLOR_PRINCIPAL : '#fff',
+                minWidth: abierta ? 40 : 0,
                 justifyContent: 'center',
-                '& .MuiSvgIcon-root': {
-                  fontSize: 22,
-                },
               }}
             >
               <Icono />
@@ -160,11 +156,8 @@ export default function DisenoPortal() {
             {abierta && (
               <ListItemText
                 primary={elemento.etiqueta}
-                primaryTypographyProps={{
-                  fontSize: 15,
-                  lineHeight: 1.2,
-                  fontWeight: seleccionado ? 600 : 500,
-                }}
+                className={`sidebar-item-text ${seleccionado ? 'active' : ''}`}
+                primaryTypographyProps={{ fontSize: '1.1rem' }}
               />
             )}
           </ListItemButton>
@@ -173,7 +166,11 @@ export default function DisenoPortal() {
         return abierta ? (
           boton
         ) : (
-          <Tooltip key={elemento.clave} title={elemento.etiqueta} placement="right">
+          <Tooltip
+            key={elemento.clave}
+            title={elemento.etiqueta}
+            placement="right"
+          >
             {boton}
           </Tooltip>
         );
@@ -262,8 +259,6 @@ export default function DisenoPortal() {
               overflowX: 'hidden',
               paddingTop: '68px',
               transition: 'width 0.3s ease',
-              boxShadow:
-                '0 6px 10px rgba(0,0,0,0.15), 0 2px 3px rgba(0,0,0,0.3)',
             },
           }}
         >
