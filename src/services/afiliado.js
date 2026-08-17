@@ -59,6 +59,30 @@ const construirDatosAfiliado = (formulario, opciones = {}) => ({
   afiliadoTitularId: opciones.afiliadoTitularId ?? null,
 });
 
+const obtenerListado = async (
+  filtros = {},
+  pagina = 0,
+  limite = 10,
+  soloTitulares = false
+) => {
+  const { data: datos } = await clienteApi.get('/afiliados');
+  const afiliados = Array.isArray(datos) ? datos : [];
+  const afiliadosLegados = afiliados
+    .filter((elemento) => !soloTitulares || elemento.parentesco === 'Titular')
+    .map(adaptarAfiliadoLegado);
+
+  const afiliadosFiltrados = filtrarPorTexto(afiliadosLegados, filtros, [
+    (elemento) => `${elemento.nombre} ${elemento.apellido}`,
+    (elemento) => elemento.numeroDocumento,
+    (elemento) => elemento.credencial ?? elemento.Contrato?.nAfiliado,
+    (elemento) => elemento.parentesco?.relacion,
+  ]);
+
+  return formatearListadoAfiliados(
+    paginar(afiliadosFiltrados, pagina, limite)
+  );
+};
+
 // Esta API pública pertenece al frontend original y se conserva únicamente
 // para no romper sus consumidores heredados. Toda la implementación nueva y
 // los portales agregados en esta mejora utilizan identificadores en español.
@@ -112,23 +136,24 @@ export const modificarFechaBajaAfiliado = async (id, fechaBaja) =>
 export const reincorporarAfiliado = async (id) =>
   (await clienteApi.put(`/afiliados/${id}`, { fechaBaja: null })).data;
 
-export const getTitulares = async (filtros = {}, pagina = 0, limite = 10) => {
+export const obtenerAfiliadosListado = async (
+  filtros = {},
+  pagina = 0,
+  limite = 10
+) => {
   try {
-    const { data: datos } = await clienteApi.get('/afiliados');
-    const afiliadosLegados = (Array.isArray(datos) ? datos : [])
-      .filter((elemento) => elemento.parentesco === 'Titular')
-      .map(adaptarAfiliadoLegado);
-    const afiliadosFiltrados = filtrarPorTexto(afiliadosLegados, filtros, [
-      (elemento) => `${elemento.nombre} ${elemento.apellido}`,
-      (elemento) => elemento.numeroDocumento,
-      (elemento) => elemento.credencial ?? elemento.Contrato?.nAfiliado,
-    ]);
-
-    return formatearListadoAfiliados(
-      paginar(afiliadosFiltrados, pagina, limite)
-    );
+    return await obtenerListado(filtros, pagina, limite, false);
   } catch (error) {
     console.error('Error al obtener listado de afiliados:', error);
+    throw error;
+  }
+};
+
+export const getTitulares = async (filtros = {}, pagina = 0, limite = 10) => {
+  try {
+    return await obtenerListado(filtros, pagina, limite, true);
+  } catch (error) {
+    console.error('Error al obtener listado de titulares:', error);
     throw error;
   }
 };
