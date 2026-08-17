@@ -73,6 +73,12 @@ export const portalAfiliado = {
     clienteApi
       .get('/portal-afiliado/cartilla')
       .then((respuesta) => respuesta.data),
+  buscarPrestadores: (busqueda) =>
+    clienteApi
+      .get('/portal-afiliado/prestadores/buscar', {
+        params: { busqueda },
+      })
+      .then((respuesta) => respuesta.data),
   obtenerSolicitudes: () =>
     clienteApi
       .get('/portal-afiliado/solicitudes')
@@ -93,10 +99,10 @@ export const portalAfiliado = {
         texto,
       })
       .then((respuesta) => respuesta.data),
-  obtenerDisponibilidad: (fecha, filtros = {}) =>
+  obtenerDisponibilidad: (filtros = {}) =>
     clienteApi
       .get('/portal-afiliado/disponibilidad', {
-        params: { fecha, ...filtros },
+        params: filtros,
       })
       .then((respuesta) => respuesta.data),
   obtenerTurnos: () =>
