@@ -1,9 +1,18 @@
-import { AppBar, Toolbar, IconButton, Box } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Box, Button } from '@mui/material';
 import IconoMenu from '@mui/icons-material/Menu';
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 import LogoMarca from '../../common/BrandLogo';
+import { limpiarSesion } from '../../../services/portal';
 
 export default function BarraSuperior({ alHacerClicMenu }) {
+  const navegar = useNavigate();
+
+  const cerrarSesion = () => {
+    limpiarSesion();
+    navegar('/portal/acceso');
+  };
+
   return (
     <AppBar
       position="fixed"
@@ -28,6 +37,9 @@ export default function BarraSuperior({ alHacerClicMenu }) {
           </IconButton>
           <LogoMarca clickable size="medium" />
         </Box>
+        <Button color="inherit" onClick={cerrarSesion}>
+          Cerrar sesión
+        </Button>
       </Toolbar>
     </AppBar>
   );
