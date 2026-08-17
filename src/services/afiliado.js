@@ -66,19 +66,18 @@ const obtenerListado = async (
   soloTitulares = false
 ) => {
   const { data: datos } = await clienteApi.get('/afiliados');
-  const afiliados = Array.isArray(datos) ? datos : [];
-  const afiliadosLegados = afiliados
+  const afiliadosLegados = (Array.isArray(datos) ? datos : [])
     .filter((elemento) => !soloTitulares || elemento.parentesco === 'Titular')
     .map(adaptarAfiliadoLegado);
-
   const afiliadosFiltrados = filtrarPorTexto(afiliadosLegados, filtros, [
     (elemento) => `${elemento.nombre} ${elemento.apellido}`,
     (elemento) => elemento.numeroDocumento,
     (elemento) => elemento.credencial ?? elemento.Contrato?.nAfiliado,
-    (elemento) => elemento.parentesco?.relacion,
   ]);
 
-  return formatearListadoAfiliados(paginar(afiliadosFiltrados, pagina, limite));
+  return formatearListadoAfiliados(
+    paginar(afiliadosFiltrados, pagina, limite)
+  );
 };
 
 // Esta API pública pertenece al frontend original y se conserva únicamente
@@ -128,11 +127,28 @@ export const deleteAfiliadoById = async (id, fechaBaja = null) =>
     ? clienteApi.put(`/afiliados/${id}`, { fechaBaja })
     : clienteApi.delete(`/afiliados/${id}`);
 
-export const modificarFechaBajaAfiliado = async (id, fechaBaja) =>
-  (await clienteApi.put(`/afiliados/${id}`, { fechaBaja })).data;
+export const modificarFechaBajaAfiliado = async (
+  id,
+  fechaBaja,
+  aplicarAGrupoFamiliar = false
+) =>
+  (
+    await clienteApi.put(`/afiliados/${id}`, {
+      fechaBaja,
+      aplicarAGrupoFamiliar,
+    })
+  ).data;
 
-export const reincorporarAfiliado = async (id) =>
-  (await clienteApi.put(`/afiliados/${id}`, { fechaBaja: null })).data;
+export const reincorporarAfiliado = async (
+  id,
+  reincorporarGrupoFamiliar = false
+) =>
+  (
+    await clienteApi.put(`/afiliados/${id}`, {
+      fechaBaja: null,
+      aplicarAGrupoFamiliar: reincorporarGrupoFamiliar,
+    })
+  ).data;
 
 export const obtenerAfiliadosListado = async (
   filtros = {},
