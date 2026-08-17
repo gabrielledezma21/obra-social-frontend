@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Box,
@@ -73,7 +73,6 @@ export default function PortalAfiliado() {
   const [error, setError] = useState('');
   const [formulario, setFormulario] = useState(FORMULARIO_VACIO);
   const [solicitudEditandoId, setSolicitudEditandoId] = useState(null);
-  const [fechaTurno, setFechaTurno] = useState('');
   const [afiliadoTurnoId, setAfiliadoTurnoId] = useState('');
   const [horariosDisponibles, setHorariosDisponibles] = useState([]);
   const navegar = useNavigate();
@@ -249,25 +248,17 @@ export default function PortalAfiliado() {
     }
   };
 
-  const buscarDisponibilidad = async (filtros = {}) => {
-    if (!fechaTurno) {
-      setError('Elegí una fecha para buscar turnos.');
-      return null;
-    }
-
+  const buscarDisponibilidad = useCallback(async (filtros = {}) => {
     try {
       setError('');
-      const horarios = await portalAfiliado.obtenerDisponibilidad(
-        fechaTurno,
-        filtros
-      );
+      const horarios = await portalAfiliado.obtenerDisponibilidad(filtros);
       setHorariosDisponibles(horarios);
       return horarios;
     } catch (errorPeticion) {
       setError(obtenerMensajeError(errorPeticion));
       return null;
     }
-  };
+  }, []);
   const reservarTurno = async (horario) => {
     try {
       await portalAfiliado.reservarTurno({
@@ -282,6 +273,7 @@ export default function PortalAfiliado() {
           (horarioActual) =>
             !(
               horarioActual.agendaId === horario.agendaId &&
+              horarioActual.fecha === horario.fecha &&
               horarioActual.hora === horario.hora
             )
         )
@@ -688,8 +680,6 @@ export default function PortalAfiliado() {
         <GestionTurnosAfiliado
           integrantes={integrantes}
           cartilla={cartilla}
-          fechaTurno={fechaTurno}
-          setFechaTurno={setFechaTurno}
           afiliadoTurnoId={afiliadoTurnoId}
           setAfiliadoTurnoId={setAfiliadoTurnoId}
           horariosDisponibles={horariosDisponibles}
