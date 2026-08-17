@@ -11,7 +11,11 @@ import {
 } from '@mui/material';
 import IconoContraer from '@mui/icons-material/ExpandLessOutlined';
 import IconoExpandir from '@mui/icons-material/ExpandMoreOutlined';
-import { Link as EnlaceRouter, useLocation } from 'react-router-dom';
+import {
+  Link as EnlaceRouter,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
 import './SidebarItem.css';
 
 export default function ElementoBarraLateral({
@@ -22,19 +26,27 @@ export default function ElementoBarraLateral({
   colapsado,
 }) {
   const ubicacion = useLocation();
+  const navegar = useNavigate();
   const [desplegado, setDesplegado] = useState(false);
 
   const tieneHijoActivo = elemento.hijos?.some((hijo) =>
     ubicacion.pathname.startsWith(hijo.ruta)
   );
-  const estaActivo = !elemento.hijos && ubicacion.pathname === elemento.ruta;
+  const estaActivo =
+    !elemento.hijos &&
+    (ubicacion.pathname === elemento.ruta ||
+      (elemento.ruta !== '/administracion' &&
+        ubicacion.pathname.startsWith(`${elemento.ruta}/`)));
 
   useEffect(() => {
     setDesplegado(tieneHijoActivo);
   }, [ubicacion.pathname, tieneHijoActivo]);
 
   const manejarClic = (evento) => {
-    if (!elemento.hijos) return;
+    if (!elemento.hijos) {
+      if (elemento.ruta) navegar(elemento.ruta);
+      return;
+    }
 
     const vistaExpandida = abierto || esMobile;
     if (vistaExpandida) {
@@ -60,8 +72,6 @@ export default function ElementoBarraLateral({
       >
         <ListItemButton
           onClick={manejarClic}
-          component={!tieneHijos ? EnlaceRouter : 'div'}
-          to={!tieneHijos ? elemento.ruta : undefined}
           className={`sidebar-item-button ${activo ? 'active' : ''}`}
         >
           <ListItemIcon
