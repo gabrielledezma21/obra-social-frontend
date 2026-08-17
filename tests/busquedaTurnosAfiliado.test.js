@@ -63,14 +63,8 @@ test('el portal envía los nuevos filtros y distingue la fecha al reservar', asy
     portal,
     /buscarDisponibilidad = useCallback\(async \(filtros = \{\}\) =>/
   );
-  assert.match(
-    portal,
-    /portalAfiliado\.obtenerDisponibilidad\(filtros\)/
-  );
-  assert.match(
-    portal,
-    /horarioActual\.fecha === horario\.fecha/
-  );
+  assert.match(portal, /portalAfiliado\.obtenerDisponibilidad\(filtros\)/);
+  assert.match(portal, /horarioActual\.fecha === horario\.fecha/);
   assert.doesNotMatch(portal, /fechaTurno=\{fechaTurno\}/);
 
   assert.match(
