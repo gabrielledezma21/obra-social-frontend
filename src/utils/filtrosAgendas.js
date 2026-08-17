@@ -53,7 +53,9 @@ const coincideEntidad = (entidad, filtro) => {
   if (!filtro) return true;
 
   const idFiltro = String(filtro?.value ?? filtro?.id ?? '');
-  const nombreFiltro = normalizarTexto(filtro?.label ?? filtro?.nombre ?? filtro);
+  const nombreFiltro = normalizarTexto(
+    filtro?.label ?? filtro?.nombre ?? filtro
+  );
   const idEntidad = String(entidad?.id ?? entidad?._id ?? '');
   const nombreEntidad = normalizarTexto(entidad?.nombre ?? entidad);
 
@@ -77,7 +79,8 @@ const coincideHorario = (horario, filtros) => {
   ) {
     return false;
   }
-  if (horaInicio && String(horario?.horaInicio ?? '') !== horaInicio) return false;
+  if (horaInicio && String(horario?.horaInicio ?? '') !== horaInicio)
+    return false;
   if (horaFin && String(horario?.horaFin ?? '') !== horaFin) return false;
 
   return true;
@@ -106,7 +109,8 @@ export const filtrarAgendas = (agendas = [], filtros = {}) => {
     }
 
     if (!coincideEntidad(agenda?.prestador, filtros.prestador)) return false;
-    if (!coincideEntidad(agenda?.especialidad, filtros.especialidad)) return false;
+    if (!coincideEntidad(agenda?.especialidad, filtros.especialidad))
+      return false;
 
     if (provincia && !contiene(agenda?.direccion?.provincia, provincia)) {
       return false;
