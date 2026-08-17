@@ -1,53 +1,182 @@
+import { useState } from 'react';
 import {
   AppBar,
   Box,
+  Button,
   Container,
   Drawer,
   IconButton,
-  Stack,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
   Toolbar,
   Tooltip,
   Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import IconoInicio from '@mui/icons-material/HomeOutlined';
-import IconoSalir from '@mui/icons-material/LogoutOutlined';
-import IconoPersona from '@mui/icons-material/PersonOutlined';
-import IconoPrestador from '@mui/icons-material/MedicalInformationOutlined';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import IconoMenu from '@mui/icons-material/Menu';
+import IconoResumen from '@mui/icons-material/ShowChartOutlined';
+import IconoSolicitudNueva from '@mui/icons-material/AddCircleOutline';
+import IconoSolicitudes from '@mui/icons-material/FeedOutlined';
+import IconoTurnos from '@mui/icons-material/CalendarTodayOutlined';
+import IconoCartilla from '@mui/icons-material/MedicalInformationOutlined';
+import IconoAfiliados from '@mui/icons-material/PeopleOutline';
+import IconoHistoria from '@mui/icons-material/HistoryEduOutlined';
+import { Outlet, useNavigate } from 'react-router-dom';
 import LogoMarca from '../components/common/BrandLogo';
 import PiePagina from '../components/Footer';
 import { limpiarSesion, obtenerSesion } from '../services/portal';
 
-const ANCHO_BARRA = 94;
+const ANCHO_BARRA_ABIERTA = 280;
+const ANCHO_BARRA_CERRADA = 70;
 const COLOR_OSCURO = '#0B111E';
 const COLOR_PRINCIPAL = '#00B1EA';
 const COLOR_FONDO = '#F8F8F8';
 
-const obtenerRutaPrincipal = (rol) => {
-  if (rol === 'AFILIADO') return '/portal/afiliado';
-  if (rol === 'PRESTADOR') return '/portal/prestador';
-  if (rol === 'ADMIN') return '/';
-  return '/portal/acceso';
-};
+const ELEMENTOS_AFILIADO = [
+  { clave: 'resumen', etiqueta: 'Resumen', icono: IconoResumen },
+  {
+    clave: 'nueva-solicitud',
+    etiqueta: 'Nueva solicitud',
+    icono: IconoSolicitudNueva,
+    pestana: 0,
+  },
+  {
+    clave: 'solicitudes',
+    etiqueta: 'Solicitudes',
+    icono: IconoSolicitudes,
+    pestana: 1,
+  },
+  { clave: 'turnos', etiqueta: 'Turnos', icono: IconoTurnos, pestana: 2 },
+  {
+    clave: 'cartilla',
+    etiqueta: 'Cartilla médica',
+    icono: IconoCartilla,
+    pestana: 3,
+  },
+];
+
+const ELEMENTOS_PRESTADOR = [
+  { clave: 'resumen', etiqueta: 'Resumen', icono: IconoResumen },
+  {
+    clave: 'solicitudes',
+    etiqueta: 'Solicitudes',
+    icono: IconoSolicitudes,
+    pestana: 0,
+  },
+  { clave: 'turnos', etiqueta: 'Turnos', icono: IconoTurnos, pestana: 1 },
+  {
+    clave: 'afiliados',
+    etiqueta: 'Afiliados y situaciones',
+    icono: IconoAfiliados,
+    pestana: 2,
+  },
+  {
+    clave: 'historia',
+    etiqueta: 'Historia clínica',
+    icono: IconoHistoria,
+    pestana: 3,
+  },
+];
 
 export default function DisenoPortal() {
   const tema = useTheme();
   const esMobile = useMediaQuery(tema.breakpoints.down('md'));
   const navegar = useNavigate();
-  const ubicacion = useLocation();
   const { token, usuario } = obtenerSesion();
   const mostrarNavegacion = Boolean(token && usuario);
+  const [barraAbierta, setBarraAbierta] = useState(false);
+  const [menuMobileAbierto, setMenuMobileAbierto] = useState(false);
+  const [elementoActivo, setElementoActivo] = useState('resumen');
+
+  const elementos =
+    usuario?.rol === 'PRESTADOR' ? ELEMENTOS_PRESTADOR : ELEMENTOS_AFILIADO;
+  const anchoBarra = barraAbierta ? ANCHO_BARRA_ABIERTA : ANCHO_BARRA_CERRADA;
 
   const cerrarSesion = () => {
     limpiarSesion();
     navegar('/portal/acceso');
   };
 
-  const irAlInicio = () => navegar(obtenerRutaPrincipal(usuario?.rol));
+  const seleccionarElemento = (elemento) => {
+    setElementoActivo(elemento.clave);
+    setMenuMobileAbierto(false);
 
-  const IconoRol = usuario?.rol === 'PRESTADOR' ? IconoPrestador : IconoPersona;
+    if (elemento.pestana === undefined) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    const pestanas = document.querySelectorAll('[role="tab"]');
+    const pestanaObjetivo = pestanas[elemento.pestana];
+    if (pestanaObjetivo) pestanaObjetivo.click();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const contenidoBarra = (abierta) => (
+    <>
+      <List sx={{ px: 1, pt: 1.5, flexGrow: 1 }}>
+        {elementos.map((elemento) => {
+          const Icono = elemento.icono;
+          const seleccionado = elementoActivo === elemento.clave;
+
+          const boton = (
+            <ListItemButton
+              key={elemento.clave}
+              selected={seleccionado}
+              onClick={() => seleccionarElemento(elemento)}
+              sx={{
+                minHeight: 56,
+                mb: 0.75,
+                px: abierta ? 2 : 1.5,
+                borderRadius: 2,
+                justifyContent: abierta ? 'initial' : 'center',
+                color: seleccionado ? '#fff' : 'rgba(255,255,255,0.86)',
+                backgroundColor: seleccionado
+                  ? 'rgba(0,177,234,0.18)'
+                  : 'transparent',
+                '&.Mui-selected': {
+                  backgroundColor: 'rgba(0,177,234,0.18)',
+                },
+                '&.Mui-selected:hover, &:hover': {
+                  backgroundColor: 'rgba(0,177,234,0.26)',
+                },
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: abierta ? 44 : 0,
+                  color: seleccionado ? COLOR_PRINCIPAL : '#fff',
+                  justifyContent: 'center',
+                }}
+              >
+                <Icono />
+              </ListItemIcon>
+              {abierta && (
+                <ListItemText
+                  primary={elemento.etiqueta}
+                  primaryTypographyProps={{
+                    fontSize: 16,
+                    fontWeight: seleccionado ? 600 : 500,
+                  }}
+                />
+              )}
+            </ListItemButton>
+          );
+
+          return abierta ? (
+            boton
+          ) : (
+            <Tooltip key={elemento.clave} title={elemento.etiqueta} placement="right">
+              {boton}
+            </Tooltip>
+          );
+        })}
+      </List>
+    </>
+  );
 
   return (
     <Box
@@ -59,140 +188,123 @@ export default function DisenoPortal() {
         fontFamily: 'Inter, sans-serif',
       }}
     >
+      <AppBar
+        position="fixed"
+        elevation={0}
+        sx={{
+          backgroundColor: COLOR_OSCURO,
+          color: '#fff',
+          zIndex: (temaActual) => temaActual.zIndex.drawer + 1,
+        }}
+      >
+        <Toolbar
+          sx={{
+            minHeight: '64px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 2,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {mostrarNavegacion && (
+              <IconButton
+                color="inherit"
+                onClick={() =>
+                  esMobile
+                    ? setMenuMobileAbierto(true)
+                    : setBarraAbierta((abierta) => !abierta)
+                }
+              >
+                <IconoMenu />
+              </IconButton>
+            )}
+            <LogoMarca clickable={false} size="medium" />
+          </Box>
+
+          {mostrarNavegacion ? (
+            <Button
+              color="inherit"
+              onClick={cerrarSesion}
+              sx={{ textTransform: 'none', fontWeight: 600 }}
+            >
+              Cerrar sesión
+            </Button>
+          ) : (
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'rgba(255,255,255,0.72)',
+                display: { xs: 'none', sm: 'block' },
+              }}
+            >
+              Portal MedIntegral
+            </Typography>
+          )}
+        </Toolbar>
+      </AppBar>
+
       {mostrarNavegacion && !esMobile && (
         <Drawer
           variant="permanent"
+          open={barraAbierta}
           sx={{
-            width: ANCHO_BARRA,
+            width: anchoBarra,
             flexShrink: 0,
             '& .MuiDrawer-paper': {
-              width: ANCHO_BARRA,
+              width: anchoBarra,
               boxSizing: 'border-box',
               backgroundColor: COLOR_OSCURO,
               color: '#fff',
               borderRight: 'none',
-              px: 1.5,
-              py: 3,
-              alignItems: 'center',
+              overflowX: 'hidden',
+              paddingTop: '68px',
+              transition: 'width 0.3s ease',
               boxShadow:
                 '0 6px 10px rgba(0,0,0,0.15), 0 2px 3px rgba(0,0,0,0.3)',
             },
           }}
         >
-          <Box sx={{ mb: 6 }}>
-            <LogoMarca clickable={false} size="small" compacto />
-          </Box>
-
-          <Stack spacing={1.5} alignItems="center" sx={{ flexGrow: 1 }}>
-            <Tooltip title="Inicio" placement="right">
-              <IconButton
-                onClick={irAlInicio}
-                sx={{
-                  width: 56,
-                  height: 56,
-                  color: '#fff',
-                  borderRadius: 2,
-                  backgroundColor: ubicacion.pathname.includes('/portal/')
-                    ? 'rgba(0,177,234,0.12)'
-                    : 'transparent',
-                  '&:hover': { backgroundColor: 'rgba(0,177,234,0.2)' },
-                }}
-              >
-                <IconoInicio />
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip
-              title={usuario?.rol === 'PRESTADOR' ? 'Prestador' : 'Afiliado'}
-              placement="right"
-            >
-              <Box
-                sx={{
-                  width: 56,
-                  height: 56,
-                  display: 'grid',
-                  placeItems: 'center',
-                  color: COLOR_PRINCIPAL,
-                }}
-              >
-                <IconoRol />
-              </Box>
-            </Tooltip>
-          </Stack>
-
-          <Tooltip title="Cerrar sesión" placement="right">
-            <IconButton
-              onClick={cerrarSesion}
-              sx={{
-                width: 56,
-                height: 56,
-                color: '#fff',
-                borderRadius: 2,
-                '&:hover': { backgroundColor: 'rgba(255,255,255,0.08)' },
-              }}
-            >
-              <IconoSalir />
-            </IconButton>
-          </Tooltip>
+          {contenidoBarra(barraAbierta)}
         </Drawer>
       )}
 
-      {(!mostrarNavegacion || esMobile) && (
-        <AppBar
-          position="fixed"
-          elevation={0}
-          sx={{ backgroundColor: COLOR_OSCURO, color: '#fff' }}
+      {mostrarNavegacion && esMobile && (
+        <Drawer
+          open={menuMobileAbierto}
+          onClose={() => setMenuMobileAbierto(false)}
+          sx={{
+            '& .MuiDrawer-paper': {
+              width: 280,
+              boxSizing: 'border-box',
+              backgroundColor: COLOR_OSCURO,
+              color: '#fff',
+              pt: 2,
+            },
+          }}
         >
-          <Toolbar
-            sx={{
-              minHeight: { xs: 72, sm: 80 },
-              display: 'flex',
-              justifyContent: 'space-between',
-              gap: 2,
-            }}
-          >
+          <Box sx={{ px: 2, py: 1.5 }}>
             <LogoMarca clickable={false} size="medium" />
-            {mostrarNavegacion ? (
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <IconButton onClick={irAlInicio} sx={{ color: '#fff' }}>
-                  <IconoInicio />
-                </IconButton>
-                <IconButton onClick={cerrarSesion} sx={{ color: '#fff' }}>
-                  <IconoSalir />
-                </IconButton>
-              </Stack>
-            ) : (
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'rgba(255,255,255,0.72)',
-                  display: { xs: 'none', sm: 'block' },
-                }}
-              >
-                Portal MedIntegral
-              </Typography>
-            )}
-          </Toolbar>
-        </AppBar>
+          </Box>
+          {contenidoBarra(true)}
+        </Drawer>
       )}
 
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          ml: mostrarNavegacion && !esMobile ? `${ANCHO_BARRA}px` : 0,
-          pt: !mostrarNavegacion || esMobile ? { xs: 12, sm: 14 } : 3,
+          mt: 8,
+          ml: mostrarNavegacion && !esMobile ? `${anchoBarra}px` : 0,
           pb: 5,
-          transition: 'margin 0.25s ease',
+          transition: 'margin 0.3s ease',
           '& .MuiTypography-h4': {
             fontSize: { xs: '1.75rem', md: '2rem' },
             lineHeight: 1.15,
             fontWeight: 600,
-            letterSpacing: 0,
             color: '#000',
           },
           '& .MuiTypography-h6': {
-            fontSize: '1.5rem',
+            fontSize: '1.35rem',
             lineHeight: 1.2,
             fontWeight: 600,
           },
@@ -208,26 +320,7 @@ export default function DisenoPortal() {
             '&:last-child': { paddingBottom: '16px' },
           },
           '& .MuiTabs-root': {
-            minHeight: 48,
-            backgroundColor: 'transparent',
-            borderRadius: 0,
-            border: 'none',
-            borderBottom: '1px solid #D9D9D9',
-            px: 0,
-          },
-          '& .MuiTab-root': {
-            minHeight: 48,
-            textTransform: 'none',
-            fontWeight: 600,
-            fontSize: '1rem',
-            color: '#9B9B9B',
-            px: 2,
-          },
-          '& .MuiTab-root.Mui-selected': { color: COLOR_PRINCIPAL },
-          '& .MuiTabs-indicator': {
-            height: 3,
-            borderRadius: '3px 3px 0 0',
-            backgroundColor: COLOR_PRINCIPAL,
+            display: mostrarNavegacion ? 'none' : 'flex',
           },
           '& .MuiButton-root': {
             minHeight: 43,
@@ -250,21 +343,36 @@ export default function DisenoPortal() {
         }}
       >
         <Container
-          maxWidth={false}
+          maxWidth="lg"
           sx={{
-            width: '100%',
-            maxWidth: mostrarNavegacion ? '1152px' : '1200px',
-            px: { xs: 2, sm: 3 },
+            pt: 3,
+            flexGrow: 1,
+            mb: 4,
           }}
         >
+          {mostrarNavegacion && (
+            <Typography
+              sx={{
+                color: '#9B9B9B',
+                fontSize: 16,
+                fontWeight: 600,
+                mb: 3,
+              }}
+            >
+              Home
+            </Typography>
+          )}
           <Outlet />
         </Container>
       </Box>
 
       <PiePagina
         sx={{
-          pl: mostrarNavegacion && !esMobile ? `${ANCHO_BARRA + 12}px` : 2,
-          transition: 'padding 0.25s ease',
+          pl:
+            mostrarNavegacion && !esMobile
+              ? `${anchoBarra + 16}px`
+              : '16px',
+          transition: 'padding 0.3s ease',
         }}
       />
     </Box>
