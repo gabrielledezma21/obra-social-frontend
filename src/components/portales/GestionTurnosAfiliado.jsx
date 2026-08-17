@@ -1,11 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Grid,
   MenuItem,
   Stack,
@@ -13,14 +15,27 @@ import {
   Typography,
 } from '@mui/material';
 import PropTypes from 'prop-types';
+import { portalAfiliado } from '../../services/portal';
 
 const FILTROS_VACIOS = {
   prestadorId: '',
   especialidadId: '',
   localidad: '',
+  diaSemana: '',
   horaDesde: '',
   horaHasta: '',
 };
+
+const DIAS_SEMANA = [
+  { valor: '', etiqueta: 'Cualquier día · próximos libres' },
+  { valor: 'Lunes', etiqueta: 'Lunes' },
+  { valor: 'Martes', etiqueta: 'Martes' },
+  { valor: 'Miercoles', etiqueta: 'Miércoles' },
+  { valor: 'Jueves', etiqueta: 'Jueves' },
+  { valor: 'Viernes', etiqueta: 'Viernes' },
+  { valor: 'Sabado', etiqueta: 'Sábado' },
+  { valor: 'Domingo', etiqueta: 'Domingo' },
+];
 
 const obtenerId = (valor) => valor?._id ?? valor?.id ?? valor ?? '';
 
@@ -55,11 +70,20 @@ const obtenerLocalidades = (prestadores) => {
   );
 };
 
+const formatearFecha = (valor) => {
+  const fechaTexto = String(valor || '').slice(0, 10);
+  const coincidencia = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fechaTexto);
+  if (!coincidencia) return fechaTexto || 'Fecha sin informar';
+
+  return `${coincidencia[3]}/${coincidencia[2]}/${coincidencia[1]}`;
+};
+
+const obtenerEtiquetaDia = (valor) =>
+  DIAS_SEMANA.find((dia) => dia.valor === valor)?.etiqueta || valor || '';
+
 export default function GestionTurnosAfiliado({
   integrantes,
   cartilla,
-  fechaTurno,
-  setFechaTurno,
   afiliadoTurnoId,
   setAfiliadoTurnoId,
   horariosDisponibles,
@@ -70,24 +94,15 @@ export default function GestionTurnosAfiliado({
 }) {
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
   const [busquedaRealizada, setBusquedaRealizada] = useState(false);
+  const [textoPrestador, setTextoPrestador] = useState('');
+  const [prestadorSeleccionado, setPrestadorSeleccionado] = useState(null);
+  const [prestadoresSugeridos, setPrestadoresSugeridos] = useState([]);
+  const [cargandoPrestadores, setCargandoPrestadores] = useState(false);
 
-  const prestadoresDisponibles = useMemo(
-    () =>
-      [...cartilla].sort((primero, segundo) =>
-        String(primero.nombre || '').localeCompare(
-          String(segundo.nombre || ''),
-          'es'
-        )
-      ),
-    [cartilla]
+  const prestadoresParaOpciones = useMemo(
+    () => (prestadorSeleccionado ? [prestadorSeleccionado] : cartilla),
+    [cartilla, prestadorSeleccionado]
   );
-
-  const prestadoresParaOpciones = useMemo(() => {
-    if (!filtros.prestadorId) return cartilla;
-    return cartilla.filter(
-      (prestador) => obtenerId(prestador) === filtros.prestadorId
-    );
-  }, [cartilla, filtros.prestadorId]);
 
   const especialidadesDisponibles = useMemo(
     () => obtenerEspecialidades(prestadoresParaOpciones),
@@ -99,28 +114,82 @@ export default function GestionTurnosAfiliado({
     [prestadoresParaOpciones]
   );
 
+  useEffect(() => {
+    let activo = true;
+    const texto = textoPrestador.trim();
+
+    if (
+      texto.length < 2 ||
+      (prestadorSeleccionado && texto === prestadorSeleccionado.nombre)
+    ) {
+      setPrestadoresSugeridos(
+        prestadorSeleccionado ? [prestadorSeleccionado] : []
+      );
+      setCargandoPrestadores(false);
+      return undefined;
+    }
+
+    const temporizador = window.setTimeout(async () => {
+      try {
+        setCargandoPrestadores(true);
+        const prestadores = await portalAfiliado.buscarPrestadores(texto);
+        if (activo) setPrestadoresSugeridos(prestadores);
+      } catch {
+        if (activo) setPrestadoresSugeridos([]);
+      } finally {
+        if (activo) setCargandoPrestadores(false);
+      }
+    }, 300);
+
+    return () => {
+      activo = false;
+      window.clearTimeout(temporizador);
+    };
+  }, [prestadorSeleccionado, textoPrestador]);
+
+  useEffect(() => {
+    let activo = true;
+
+    const cargarProximosLibres = async () => {
+      const resultado = await buscarDisponibilidad({ limite: 30 });
+      if (activo && Array.isArray(resultado)) setBusquedaRealizada(true);
+    };
+
+    cargarProximosLibres();
+    return () => {
+      activo = false;
+    };
+  }, [buscarDisponibilidad]);
+
   const actualizarFiltro = (nombre, valor) => {
     setFiltros((actuales) => ({ ...actuales, [nombre]: valor }));
     setBusquedaRealizada(false);
   };
 
-  const seleccionarPrestador = (prestadorId) => {
+  const seleccionarPrestador = (prestador) => {
+    setPrestadorSeleccionado(prestador);
+    setTextoPrestador(prestador?.nombre || '');
     setFiltros((actuales) => ({
       ...actuales,
-      prestadorId,
+      prestadorId: obtenerId(prestador),
       especialidadId: '',
       localidad: '',
     }));
     setBusquedaRealizada(false);
   };
 
-  const limpiarFiltros = () => {
+  const limpiarFiltros = async () => {
     setFiltros(FILTROS_VACIOS);
-    setBusquedaRealizada(false);
+    setPrestadorSeleccionado(null);
+    setTextoPrestador('');
+    setPrestadoresSugeridos([]);
+
+    const resultado = await buscarDisponibilidad({ limite: 30 });
+    if (Array.isArray(resultado)) setBusquedaRealizada(true);
   };
 
   const ejecutarBusqueda = async () => {
-    const resultado = await buscarDisponibilidad(filtros);
+    const resultado = await buscarDisponibilidad({ ...filtros, limite: 30 });
     if (Array.isArray(resultado)) setBusquedaRealizada(true);
   };
 
@@ -132,7 +201,8 @@ export default function GestionTurnosAfiliado({
             <Box>
               <Typography variant="h6">Buscar un turno</Typography>
               <Typography variant="body2" color="text.secondary">
-                Podés combinar médico, especialidad, localidad y franja horaria.
+                Podés combinar médico, especialidad, localidad, día de la semana
+                y horario. Si no elegís filtros, mostramos los próximos libres.
               </Typography>
             </Box>
 
@@ -154,39 +224,48 @@ export default function GestionTurnosAfiliado({
               </Grid>
 
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <Autocomplete
                   fullWidth
-                  label="Fecha"
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  value={fechaTurno}
-                  onChange={(evento) => {
-                    setFechaTurno(evento.target.value);
-                    setBusquedaRealizada(false);
-                  }}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Médico / prestador"
-                  value={filtros.prestadorId}
-                  onChange={(evento) =>
-                    seleccionarPrestador(evento.target.value)
+                  options={prestadoresSugeridos}
+                  value={prestadorSeleccionado}
+                  inputValue={textoPrestador}
+                  loading={cargandoPrestadores}
+                  filterOptions={(opciones) => opciones}
+                  getOptionLabel={(prestador) => prestador?.nombre || ''}
+                  isOptionEqualToValue={(opcion, valor) =>
+                    obtenerId(opcion) === obtenerId(valor)
                   }
-                >
-                  <MenuItem value="">Todos</MenuItem>
-                  {prestadoresDisponibles.map((prestador) => (
-                    <MenuItem
-                      key={obtenerId(prestador)}
-                      value={obtenerId(prestador)}
-                    >
-                      {prestador.nombre}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  onChange={(_evento, prestador) =>
+                    seleccionarPrestador(prestador)
+                  }
+                  onInputChange={(_evento, valor, motivo) => {
+                    setTextoPrestador(valor);
+                    if (motivo === 'clear') seleccionarPrestador(null);
+                  }}
+                  noOptionsText={
+                    textoPrestador.trim().length < 2
+                      ? 'Escribí al menos 2 letras'
+                      : 'No encontramos prestadores'
+                  }
+                  renderInput={(parametros) => (
+                    <TextField
+                      {...parametros}
+                      label="Médico / prestador"
+                      placeholder="Ej.: Hou, Grey, Torres"
+                      InputProps={{
+                        ...parametros.InputProps,
+                        endAdornment: (
+                          <>
+                            {cargandoPrestadores ? (
+                              <CircularProgress color="inherit" size={18} />
+                            ) : null}
+                            {parametros.InputProps.endAdornment}
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
+                />
               </Grid>
 
               <Grid size={{ xs: 12, md: 6 }}>
@@ -230,6 +309,24 @@ export default function GestionTurnosAfiliado({
                 </TextField>
               </Grid>
 
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Día de la semana"
+                  value={filtros.diaSemana}
+                  onChange={(evento) =>
+                    actualizarFiltro('diaSemana', evento.target.value)
+                  }
+                >
+                  {DIAS_SEMANA.map((dia) => (
+                    <MenuItem key={dia.valor || 'cualquiera'} value={dia.valor}>
+                      {dia.etiqueta}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
               <Grid size={{ xs: 6, md: 3 }}>
                 <TextField
                   fullWidth
@@ -259,7 +356,7 @@ export default function GestionTurnosAfiliado({
 
             <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
               <Button variant="contained" onClick={ejecutarBusqueda}>
-                Buscar disponibilidad
+                Buscar turnos
               </Button>
               <Button onClick={limpiarFiltros}>Limpiar filtros</Button>
             </Stack>
@@ -269,21 +366,22 @@ export default function GestionTurnosAfiliado({
 
       {busquedaRealizada && horariosDisponibles.length === 0 && (
         <Alert severity="info">
-          No encontramos turnos disponibles para los criterios seleccionados.
+          No encontramos turnos disponibles para los criterios seleccionados en
+          las próximas semanas.
         </Alert>
       )}
 
       {horariosDisponibles.length > 0 && (
         <Box>
           <Typography variant="h6" mb={1}>
-            Horarios disponibles ({horariosDisponibles.length})
+            Próximos turnos libres ({horariosDisponibles.length})
           </Typography>
           <Grid container spacing={2}>
             {horariosDisponibles.map((horario) => {
               const direccion = horario.centro?.direccionId;
               return (
                 <Grid
-                  key={`${horario.agendaId}-${horario.hora}`}
+                  key={`${horario.agendaId}-${horario.fecha}-${horario.hora}`}
                   size={{ xs: 12, md: 6 }}
                 >
                   <Card>
@@ -291,9 +389,11 @@ export default function GestionTurnosAfiliado({
                       <Typography variant="h6">
                         {horario.prestador?.nombre}
                       </Typography>
-                      <Typography>
-                        {horario.especialidad?.nombre} · {horario.hora}
+                      <Typography fontWeight={600}>
+                        {obtenerEtiquetaDia(horario.diaSemana)}{' '}
+                        {formatearFecha(horario.fecha)} · {horario.hora}
                       </Typography>
+                      <Typography>{horario.especialidad?.nombre}</Typography>
                       <Typography variant="body2" color="text.secondary">
                         {direccion
                           ? `${direccion.calle} ${direccion.altura} · ${direccion.localidad}`
@@ -329,8 +429,7 @@ export default function GestionTurnosAfiliado({
                     {turno.prestadorId?.nombre}
                   </Typography>
                   <Typography>
-                    {new Date(turno.fecha).toLocaleDateString('es-AR')} ·{' '}
-                    {turno.hora}
+                    {formatearFecha(turno.fecha)} · {turno.hora}
                   </Typography>
                   <Chip sx={{ mt: 1 }} label={turno.estado} />
                   {turno.estado === 'RESERVADO' && (
@@ -354,8 +453,6 @@ export default function GestionTurnosAfiliado({
 GestionTurnosAfiliado.propTypes = {
   integrantes: PropTypes.array.isRequired,
   cartilla: PropTypes.array.isRequired,
-  fechaTurno: PropTypes.string.isRequired,
-  setFechaTurno: PropTypes.func.isRequired,
   afiliadoTurnoId: PropTypes.string.isRequired,
   setAfiliadoTurnoId: PropTypes.func.isRequired,
   horariosDisponibles: PropTypes.array.isRequired,
