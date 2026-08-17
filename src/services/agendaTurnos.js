@@ -44,9 +44,7 @@ export const getAgendaTurnosListado = async (
     const { data } = await api.get('/agendas');
     const agendas = (Array.isArray(data) ? data : []).map(agendaToLegacy);
     const agendasFiltradas = filtrarAgendas(agendas, filters);
-    return formatAgendaTurnosListado(
-      paginate(agendasFiltradas, page, limit)
-    );
+    return formatAgendaTurnosListado(paginate(agendasFiltradas, page, limit));
   } catch (err) {
     console.error('Error al obtener listado de agendas de turnos:', err);
     throw err;
