@@ -33,7 +33,7 @@ jobs:
       - name: Aplicar formato
         run: npm run lint:fix
 
-      - name: Ejecutar pruebas
+      - name: Ejecutar pruebas actualizadas
         run: npm test
 
       - name: Validar ESLint
