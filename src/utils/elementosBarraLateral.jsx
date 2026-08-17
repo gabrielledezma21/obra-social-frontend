@@ -11,13 +11,13 @@ export const elementosBarraLateral = [
     clave: 'resumen',
     etiqueta: 'Resumen',
     icono: <IconoGrafico />,
-    ruta: '/',
+    ruta: '/administracion',
   },
   {
     clave: 'reportes',
     etiqueta: 'Reportes',
     icono: <IconoReportes />,
-    ruta: '/reportes',
+    ruta: '/administracion/reportes',
   },
   {
     clave: 'afiliados',
@@ -27,12 +27,12 @@ export const elementosBarraLateral = [
       {
         etiqueta: 'Ver listado',
         icono: <IconoListado />,
-        ruta: '/afiliados/listado',
+        ruta: '/administracion/afiliados/listado',
       },
       {
         etiqueta: 'Agregar',
         icono: <IconoAgregar />,
-        ruta: '/afiliados/alta',
+        ruta: '/administracion/afiliados/alta',
       },
     ],
   },
@@ -44,12 +44,12 @@ export const elementosBarraLateral = [
       {
         etiqueta: 'Ver listado',
         icono: <IconoListado />,
-        ruta: '/prestadores/listado',
+        ruta: '/administracion/prestadores/listado',
       },
       {
         etiqueta: 'Agregar',
         icono: <IconoAgregar />,
-        ruta: '/prestadores/alta',
+        ruta: '/administracion/prestadores/alta',
       },
     ],
   },
@@ -61,12 +61,12 @@ export const elementosBarraLateral = [
       {
         etiqueta: 'Ver listado',
         icono: <IconoListado />,
-        ruta: '/agenda-turnos/listado',
+        ruta: '/administracion/agenda-turnos/listado',
       },
       {
         etiqueta: 'Agregar',
         icono: <IconoAgregar />,
-        ruta: '/agenda-turnos/alta',
+        ruta: '/administracion/agenda-turnos/alta',
       },
     ],
   },
