@@ -1,67 +1,73 @@
 import { Breadcrumbs, Link, Typography } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
-const routeNameMap = {
+const nombresSecciones = {
   'agenda-turnos': 'Agenda de turnos',
   prestadores: 'Prestadores',
   afiliados: 'Afiliados',
+  reportes: 'Reportes',
+};
+
+const crearMigasAdministracion = (segmentos) => {
+  const seccion = segmentos[1];
+  const accion = segmentos[2];
+  const id = segmentos[3];
+  const migas = [{ label: 'Home', to: '/administracion' }];
+
+  if (!seccion) return migas;
+
+  if (seccion === 'reportes') {
+    migas.push({ label: 'Reportes' });
+    return migas;
+  }
+
+  const nombreSeccion = nombresSecciones[seccion] || seccion;
+  migas.push({
+    label: nombreSeccion,
+    to: `/administracion/${seccion}/listado`,
+  });
+
+  if (accion === 'alta') {
+    migas.push({ label: 'Alta' });
+  } else if (accion === 'detalle' && id) {
+    migas.push({ label: 'Detalle' });
+  } else if (accion === 'listado') {
+    migas[migas.length - 1] = { label: nombreSeccion };
+  }
+
+  return migas;
 };
 
 export default function BreadcrumbsNav() {
   const { pathname } = useLocation();
+  const segmentos = pathname.split('/').filter(Boolean);
 
-  const isHome = pathname === '/';
-  if (isHome) {
-    return (
-      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }} separator=">">
-        <Typography color="text.secondary" fontWeight="medium">
-          Home
-        </Typography>
-      </Breadcrumbs>
-    );
-  }
-
-  const segments = pathname.split('/').filter(Boolean);
-  const mainSection = segments[0];
-  const subSection = segments[1];
-  const idSection = segments[2];
-
-  const isDetalle = subSection === 'detalle' && /^\d+$/.test(idSection);
-
-  const crumbs = [
-    { label: 'Home', to: '/' },
-    {
-      label: routeNameMap[mainSection] || mainSection,
-      to:
-        subSection && !isDetalle && subSection !== 'listado'
-          ? `/${mainSection}/listado`
-          : `/${mainSection}/listado`,
-    },
-  ];
-
-  if (subSection === 'alta') {
-    crumbs.push({ label: 'Alta' });
-  } else if (isDetalle) {
-    crumbs.push({ label: `Detalle #${idSection}` });
-  }
+  const migas =
+    segmentos[0] === 'administracion'
+      ? crearMigasAdministracion(segmentos)
+      : [{ label: 'Home', to: '/' }];
 
   return (
     <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }} separator=">">
-      {crumbs.map((crumb, index) =>
-        crumb.to ? (
+      {migas.map((miga, indice) =>
+        miga.to ? (
           <Link
-            key={index}
+            key={`${miga.label}-${indice}`}
             component={RouterLink}
             underline="hover"
             color="text.secondary"
-            to={crumb.to}
+            to={miga.to}
             fontWeight="medium"
           >
-            {crumb.label}
+            {miga.label}
           </Link>
         ) : (
-          <Typography key={index} color="text.secondary" fontWeight="medium">
-            {crumb.label}
+          <Typography
+            key={`${miga.label}-${indice}`}
+            color="text.secondary"
+            fontWeight="medium"
+          >
+            {miga.label}
           </Typography>
         )
       )}
