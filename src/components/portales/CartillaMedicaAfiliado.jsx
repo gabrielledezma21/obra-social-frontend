@@ -39,7 +39,8 @@ const obtenerDireccion = (centro) => {
 };
 
 const obtenerEmail = (email) => email?.direccion || String(email || '');
-const obtenerTelefono = (telefono) => telefono?.numero || String(telefono || '');
+const obtenerTelefono = (telefono) =>
+  telefono?.numero || String(telefono || '');
 
 const coincideBusqueda = (prestador, busqueda) => {
   const texto = normalizarTexto(busqueda);
@@ -49,7 +50,9 @@ const coincideBusqueda = (prestador, busqueda) => {
     prestador.nombre,
     prestador.cuilCuit,
     prestador.esCentroMedico ? 'Centro médico' : 'Médico',
-    ...(prestador.especialidades || []).map((especialidad) => especialidad.nombre),
+    ...(prestador.especialidades || []).map(
+      (especialidad) => especialidad.nombre
+    ),
     ...(prestador.centrosDeAtencion || []).flatMap((centro) => [
       centro?.direccionId?.calle,
       centro?.direccionId?.localidad,
@@ -126,7 +129,9 @@ export default function CartillaMedicaAfiliado({ cartilla }) {
             <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: 700 }}>Prestador</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Tipo de prestador</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>
+                  Tipo de prestador
+                </TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Especialidades</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Direcciones</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Teléfonos</TableCell>
@@ -144,7 +149,9 @@ export default function CartillaMedicaAfiliado({ cartilla }) {
                 prestadoresVisibles.map((prestador) => (
                   <TableRow hover key={prestador._id || prestador.id}>
                     <TableCell>
-                      <Typography fontWeight={600}>{prestador.nombre}</Typography>
+                      <Typography fontWeight={600}>
+                        {prestador.nombre}
+                      </Typography>
                       <Typography variant="body2" color="text.secondary">
                         {prestador.cuilCuit}
                       </Typography>
@@ -156,7 +163,11 @@ export default function CartillaMedicaAfiliado({ cartilla }) {
                       {(prestador.especialidades || []).length > 0 ? (
                         (prestador.especialidades || []).map((especialidad) => (
                           <Typography
-                            key={especialidad._id || especialidad.id || especialidad.nombre}
+                            key={
+                              especialidad._id ||
+                              especialidad.id ||
+                              especialidad.nombre
+                            }
                             variant="body2"
                           >
                             • {especialidad.nombre}
@@ -172,11 +183,19 @@ export default function CartillaMedicaAfiliado({ cartilla }) {
                       {(prestador.centrosDeAtencion || []).length > 0 ? (
                         (prestador.centrosDeAtencion || []).map((centro) => (
                           <Box
-                            key={centro._id || centro.id || obtenerDireccion(centro)}
+                            key={
+                              centro._id ||
+                              centro.id ||
+                              obtenerDireccion(centro)
+                            }
                             sx={{ display: 'flex', gap: 1, mb: 0.75 }}
                           >
                             <LocationOnIcon
-                              sx={{ fontSize: 18, color: 'text.secondary', mt: 0.2 }}
+                              sx={{
+                                fontSize: 18,
+                                color: 'text.secondary',
+                                mt: 0.2,
+                              }}
                             />
                             <Typography variant="body2">
                               {obtenerDireccion(centro)}
@@ -197,7 +216,11 @@ export default function CartillaMedicaAfiliado({ cartilla }) {
                             sx={{ display: 'flex', gap: 1, mb: 0.75 }}
                           >
                             <PhoneIphoneIcon
-                              sx={{ fontSize: 18, color: 'text.secondary', mt: 0.2 }}
+                              sx={{
+                                fontSize: 18,
+                                color: 'text.secondary',
+                                mt: 0.2,
+                              }}
                             />
                             <Typography variant="body2">
                               {obtenerTelefono(telefono)}
@@ -218,7 +241,11 @@ export default function CartillaMedicaAfiliado({ cartilla }) {
                             sx={{ display: 'flex', gap: 1, mb: 0.75 }}
                           >
                             <MailOutlineIcon
-                              sx={{ fontSize: 18, color: 'text.secondary', mt: 0.2 }}
+                              sx={{
+                                fontSize: 18,
+                                color: 'text.secondary',
+                                mt: 0.2,
+                              }}
                             />
                             <Typography variant="body2">
                               {obtenerEmail(email)}
@@ -247,7 +274,9 @@ export default function CartillaMedicaAfiliado({ cartilla }) {
           onPageChange={(_evento, nuevaPagina) => setPagina(nuevaPagina)}
           onRowsPerPageChange={cambiarFilasPorPagina}
           labelRowsPerPage="Filas por página"
-          labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
+          labelDisplayedRows={({ from, to, count }) =>
+            `${from}–${to} de ${count}`
+          }
         />
       </Paper>
     </StackCartilla>
@@ -255,7 +284,11 @@ export default function CartillaMedicaAfiliado({ cartilla }) {
 }
 
 function StackCartilla({ children }) {
-  return <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>{children}</Box>;
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {children}
+    </Box>
+  );
 }
 
 StackCartilla.propTypes = {

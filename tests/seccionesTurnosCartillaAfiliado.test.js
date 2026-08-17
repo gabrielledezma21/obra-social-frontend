@@ -9,9 +9,7 @@ test('el portal separa próximos turnos de la búsqueda de nuevos turnos', async
   const buscador = await leer(
     'src/components/portales/GestionTurnosAfiliado.jsx'
   );
-  const proximos = await leer(
-    'src/components/portales/MisTurnosAfiliado.jsx'
-  );
+  const proximos = await leer('src/components/portales/MisTurnosAfiliado.jsx');
 
   assert.match(portal, /<Tab label="Mis próximos turnos" \/>/);
   assert.match(portal, /<Tab label="Sacar turno" \/>/);

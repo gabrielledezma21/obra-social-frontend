@@ -6,7 +6,6 @@ import {
   Button,
   Card,
   CardContent,
-  Chip,
   CircularProgress,
   Grid,
   MenuItem,
@@ -89,8 +88,6 @@ export default function GestionTurnosAfiliado({
   horariosDisponibles,
   buscarDisponibilidad,
   reservarTurno,
-  turnos,
-  cancelarTurno,
 }) {
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
   const [busquedaRealizada, setBusquedaRealizada] = useState(false);
@@ -413,39 +410,6 @@ export default function GestionTurnosAfiliado({
           </Grid>
         </Box>
       )}
-
-      <Box>
-        <Typography variant="h6" mb={1}>
-          Mis turnos
-        </Typography>
-        <Stack spacing={2}>
-          {turnos.length === 0 ? (
-            <Alert severity="info">No hay turnos registrados.</Alert>
-          ) : (
-            turnos.map((turno) => (
-              <Card key={turno._id}>
-                <CardContent>
-                  <Typography variant="h6">
-                    {turno.prestadorId?.nombre}
-                  </Typography>
-                  <Typography>
-                    {formatearFecha(turno.fecha)} · {turno.hora}
-                  </Typography>
-                  <Chip sx={{ mt: 1 }} label={turno.estado} />
-                  {turno.estado === 'RESERVADO' && (
-                    <Button
-                      sx={{ ml: 1, mt: 1 }}
-                      onClick={() => cancelarTurno(turno._id)}
-                    >
-                      Cancelar
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </Stack>
-      </Box>
     </Stack>
   );
 }
@@ -458,6 +422,4 @@ GestionTurnosAfiliado.propTypes = {
   horariosDisponibles: PropTypes.array.isRequired,
   buscarDisponibilidad: PropTypes.func.isRequired,
   reservarTurno: PropTypes.func.isRequired,
-  turnos: PropTypes.array.isRequired,
-  cancelarTurno: PropTypes.func.isRequired,
 };

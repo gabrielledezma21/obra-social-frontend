@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   Chip,
-  Divider,
   Grid,
   MenuItem,
   Stack,
@@ -19,6 +18,8 @@ import { useNavigate } from 'react-router-dom';
 import { limpiarSesion, portalAfiliado } from '../../services/portal';
 import PropTypes from 'prop-types';
 import GestionTurnosAfiliado from '../../components/portales/GestionTurnosAfiliado';
+import MisTurnosAfiliado from '../../components/portales/MisTurnosAfiliado';
+import CartillaMedicaAfiliado from '../../components/portales/CartillaMedicaAfiliado';
 
 const FORMULARIO_VACIO = {
   tipo: 'RECETA',
@@ -279,6 +280,7 @@ export default function PortalAfiliado() {
         )
       );
       await cargarDatos();
+      setPestana(2);
     } catch (errorPeticion) {
       setError(obtenerMensajeError(errorPeticion));
     }
@@ -362,8 +364,9 @@ export default function PortalAfiliado() {
           label={solicitudEditandoId ? 'Editar solicitud' : 'Nueva solicitud'}
         />
         <Tab label="Solicitudes" />
-        <Tab label="Turnos" />
-        <Tab label="Cartilla" />
+        <Tab label="Mis próximos turnos" />
+        <Tab label="Sacar turno" />
+        <Tab label="Cartilla médica" />
       </Tabs>
 
       {pestana === 0 && (
@@ -677,6 +680,10 @@ export default function PortalAfiliado() {
       )}
 
       {pestana === 2 && (
+        <MisTurnosAfiliado turnos={turnos} cancelarTurno={cancelarTurno} />
+      )}
+
+      {pestana === 3 && (
         <GestionTurnosAfiliado
           integrantes={integrantes}
           cartilla={cartilla}
@@ -685,38 +692,10 @@ export default function PortalAfiliado() {
           horariosDisponibles={horariosDisponibles}
           buscarDisponibilidad={buscarDisponibilidad}
           reservarTurno={reservarTurno}
-          turnos={turnos}
-          cancelarTurno={cancelarTurno}
         />
       )}
 
-      {pestana === 3 && (
-        <Stack spacing={2}>
-          {cartilla.map((prestador) => (
-            <Card key={prestador._id}>
-              <CardContent>
-                <Typography variant="h6">{prestador.nombre}</Typography>
-                <Typography>
-                  {(prestador.especialidades || [])
-                    .map((especialidad) => especialidad.nombre)
-                    .join(', ') || 'Sin especialidad informada'}
-                </Typography>
-                <Divider sx={{ my: 1 }} />
-                <Typography variant="body2" color="text.secondary">
-                  {prestador.esCentroMedico ? 'Centro médico' : 'Profesional'}
-                </Typography>
-                {(prestador.centrosDeAtencion || []).map((centro) => (
-                  <Typography key={centro._id} variant="body2">
-                    {centro.direccionId
-                      ? `${centro.direccionId.calle} ${centro.direccionId.altura} · ${centro.direccionId.localidad}`
-                      : 'Centro de atención'}
-                  </Typography>
-                ))}
-              </CardContent>
-            </Card>
-          ))}
-        </Stack>
-      )}
+      {pestana === 4 && <CartillaMedicaAfiliado cartilla={cartilla} />}
     </Stack>
   );
 }
