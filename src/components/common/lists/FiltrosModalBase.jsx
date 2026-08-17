@@ -43,7 +43,7 @@ export default function FiltrosModalBase({
   }, [fields, optionsMap]);
 
   useEffect(() => {
-    if (open || Object.keys(values).length === 0) {
+    if (open) {
       setValues(chipValues);
     }
   }, [open, chipValues]);
@@ -82,7 +82,7 @@ export default function FiltrosModalBase({
     onClose(null);
   };
 
-  const handleAsyncSearch = (field, inputValue) => {
+  function handleAsyncSearch(field, inputValue) {
     if (!field.asyncSearchUrl) return;
     debouncedFetch(
       field.asyncSearchUrl,
@@ -95,7 +95,7 @@ export default function FiltrosModalBase({
       field.debounceDelay || 400,
       field.formatter
     );
-  };
+  }
 
   const handleCheckBoxChange = (e) => {
     setIsChecked(e.target.checked);
