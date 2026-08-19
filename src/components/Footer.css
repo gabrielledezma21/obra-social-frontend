@@ -20,33 +20,17 @@
   min-width: 0;
 }
 
-.footer-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.footer-project {
-  color: #ffffff;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
 .footer-credit {
-  color: rgba(255, 255, 255, 0.62);
-  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.85rem;
+  font-weight: 500;
   line-height: 1.5;
 }
 
 .footer-author {
-  color: rgba(255, 255, 255, 0.82) !important;
-  font-weight: 600;
-  transition: color 0.2s ease;
-}
-
-.footer-author:hover {
-  color: #ffffff !important;
+  color: inherit !important;
+  font-size: inherit;
+  font-weight: inherit;
 }
 
 .footer-actions {
@@ -89,12 +73,14 @@
   }
 
   .footer-brand {
+    flex-direction: column;
     justify-content: center;
+    gap: 8px;
     width: 100%;
   }
 
-  .footer-copy {
-    text-align: left;
+  .footer-credit {
+    text-align: center;
   }
 
   .footer-actions {
