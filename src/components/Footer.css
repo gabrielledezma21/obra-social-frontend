@@ -1,6 +1,7 @@
 .footer-container {
   background-color: #0b111e;
-  padding: 1em;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 18px 24px;
   width: 100%;
 }
 
@@ -9,29 +10,95 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 20px;
 }
 
-.footer-logo {
+.footer-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
+  min-width: 0;
 }
 
-.footer-text {
-  text-align: right;
+.footer-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.footer-rights {
+.footer-project {
   color: #ffffff;
-  font-weight: 500;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.footer-credit {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.footer-author {
+  color: rgba(255, 255, 255, 0.82) !important;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.footer-author:hover {
+  color: #ffffff !important;
+}
+
+.footer-actions {
+  display: flex;
+  align-items: center;
+}
+
+.footer-github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.88) !important;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.footer-github-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
 }
 
 @media (max-width: 600px) {
-  .footer-rights {
-    font-size: 0.8rem;
-    text-align: center;
+  .footer-container {
+    padding: 16px;
+  }
+
+  .footer-grid {
+    flex-direction: column;
+    justify-content: center;
+    gap: 14px;
+  }
+
+  .footer-brand {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .footer-copy {
+    text-align: left;
+  }
+
+  .footer-actions {
+    justify-content: center;
     width: 100%;
   }
 }
