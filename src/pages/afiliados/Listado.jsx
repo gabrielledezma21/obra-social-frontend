@@ -6,6 +6,9 @@ import ListadoAfiliadosTable from '../../components/afiliados/ListadoAfiliadosTa
 import { obtenerAfiliadosListado } from '../../services/afiliado';
 import SuccessSnackbar from '../../components/common/SuccessSnackbar';
 import { useLocation } from 'react-router-dom';
+import { ordenarFilas } from '../../utils/ordenamientoListados';
+
+const LIMITE_LISTADO_COMPLETO = 10000;
 
 export default function AfiliadosListado() {
   usePageTitle('MedIntegral | Listado de afiliados');
@@ -19,6 +22,8 @@ export default function AfiliadosListado() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [filters, setFilters] = useState({ textInputSearch: '' });
+  const [order, setOrder] = useState('asc');
+  const [orderBy, setOrderBy] = useState('afiliado');
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -36,8 +41,14 @@ export default function AfiliadosListado() {
     const fetchAfiliados = async () => {
       setLoading(true);
       try {
-        const data = await obtenerAfiliadosListado(filters, page, rowsPerPage);
-        setRows(data.items || []);
+        const data = await obtenerAfiliadosListado(
+          filters,
+          0,
+          LIMITE_LISTADO_COMPLETO
+        );
+        const filasOrdenadas = ordenarFilas(data.items || [], orderBy, order);
+        const inicio = page * rowsPerPage;
+        setRows(filasOrdenadas.slice(inicio, inicio + rowsPerPage));
         setTotal(data.total || 0);
       } catch (err) {
         console.error('Error al obtener afiliados:', err);
@@ -49,10 +60,16 @@ export default function AfiliadosListado() {
     };
 
     fetchAfiliados();
-  }, [filters, page, rowsPerPage]);
+  }, [filters, page, rowsPerPage, order, orderBy]);
 
   const handleSearch = (newFilters) => {
     setFilters(newFilters);
+    setPage(0);
+  };
+
+  const handleRequestSort = (campo, direccion) => {
+    setOrderBy(campo);
+    setOrder(direccion);
     setPage(0);
   };
 
@@ -75,6 +92,9 @@ export default function AfiliadosListado() {
         rowsPerPage={rowsPerPage}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
+        order={order}
+        orderBy={orderBy}
+        onRequestSort={handleRequestSort}
       />
 
       <SuccessSnackbar
