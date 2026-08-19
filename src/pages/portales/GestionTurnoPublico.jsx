@@ -407,8 +407,8 @@ export default function GestionTurnoPublico() {
         <DialogContent>
           <DialogContentText>
             ¿Confirmás la cancelación del turno del{' '}
-            {formatearFecha(turno.fecha)} a las {turno.hora}? Esta acción quedará
-            registrada en el historial.
+            {formatearFecha(turno.fecha)} a las {turno.hora}? Esta acción
+            quedará registrada en el historial.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
