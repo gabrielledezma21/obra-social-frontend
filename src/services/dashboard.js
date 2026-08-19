@@ -4,6 +4,8 @@ import { formatDireccion } from '../utils/formats/formatDireccion';
 
 let dashboardRequest = null;
 
+const ORDEN_PLANES_PRINCIPALES = ['210', '310', '410', '510'];
+
 const loadDashboardData = () => {
   if (!dashboardRequest) {
     dashboardRequest = Promise.all([
@@ -29,6 +31,15 @@ const loadDashboardData = () => {
   return dashboardRequest;
 };
 
+const compararPorCantidadDescendente = (primero, segundo) => {
+  const diferenciaCantidad = segundo.cantidad - primero.cantidad;
+  if (diferenciaCantidad !== 0) return diferenciaCantidad;
+  return String(primero.nombre || '').localeCompare(
+    String(segundo.nombre || ''),
+    'es'
+  );
+};
+
 const groupCount = (values, fallback) =>
   Object.entries(
     values.reduce((result, value) => {
@@ -36,7 +47,22 @@ const groupCount = (values, fallback) =>
       result[key] = (result[key] ?? 0) + 1;
       return result;
     }, {})
-  ).map(([nombre, cantidad]) => ({ nombre, cantidad }));
+  )
+    .map(([nombre, cantidad]) => ({ nombre, cantidad }))
+    .sort(compararPorCantidadDescendente);
+
+const ordenarPlanes = (planes) => {
+  const planesPrincipales = ORDEN_PLANES_PRINCIPALES.filter((plan) =>
+    planes.includes(plan)
+  );
+  const planesAdicionales = planes
+    .filter((plan) => !ORDEN_PLANES_PRINCIPALES.includes(plan))
+    .sort((primero, segundo) =>
+      primero.localeCompare(segundo, 'es', { numeric: true })
+    );
+
+  return [...planesPrincipales, ...planesAdicionales];
+};
 
 export const getAfiliadosTotales = async () =>
   (await loadDashboardData()).afiliados.length;
@@ -108,20 +134,42 @@ export const getPrestadoresSinAgenda = async () => {
 
 export const getPlanesMedicosPorMes = async () => {
   const { afiliados } = await loadDashboardData();
+  const planesDisponibles = new Set(ORDEN_PLANES_PRINCIPALES);
+
   const grouped = afiliados.reduce((result, member) => {
     if (!member.fechaAlta) return result;
+
     const date = new Date(member.fechaAlta);
-    const month = new Intl.DateTimeFormat('es-AR', {
-      month: 'short',
+    if (Number.isNaN(date.getTime())) return result;
+
+    const claveMes = `${date.getUTCFullYear()}-${String(
+      date.getUTCMonth() + 1
+    ).padStart(2, '0')}`;
+    const mes = new Intl.DateTimeFormat('es-AR', {
+      month: 'long',
       year: 'numeric',
+      timeZone: 'UTC',
     }).format(date);
-    result[month] ??= { date, planes: {} };
     const plan = member.plan ?? 'Sin plan';
-    result[month].planes[plan] = (result[month].planes[plan] ?? 0) + 1;
+
+    planesDisponibles.add(plan);
+    result[claveMes] ??= {
+      mes,
+      orden: Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1),
+      planes: {},
+    };
+    result[claveMes].planes[plan] = (result[claveMes].planes[plan] ?? 0) + 1;
     return result;
   }, {});
 
-  return Object.entries(grouped)
-    .sort(([, a], [, b]) => a.date - b.date)
-    .map(([mes, value]) => ({ mes, planes: value.planes }));
+  const planes = ordenarPlanes([...planesDisponibles]);
+
+  return Object.values(grouped)
+    .sort((primero, segundo) => primero.orden - segundo.orden)
+    .map(({ mes, planes: cantidades }) => ({
+      mes,
+      planes: Object.fromEntries(
+        planes.map((plan) => [plan, cantidades[plan] ?? 0])
+      ),
+    }));
 };

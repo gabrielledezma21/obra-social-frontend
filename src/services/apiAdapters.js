@@ -181,13 +181,44 @@ export const agendaToLegacy = (raw = {}) => {
   };
 };
 
+const separarFechaHora = (valor) => {
+  if (!valor) return { fecha: null, hora: null };
+  const fecha = new Date(valor);
+  if (Number.isNaN(fecha.getTime())) return { fecha: null, hora: null };
+  return {
+    fecha: fecha.toLocaleDateString('es-AR'),
+    hora: fecha.toLocaleTimeString('es-AR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+  };
+};
+
 export const afiliadoToLegacy = (raw = {}) => {
-  const address = normalizeAddress(raw.direccionId);
   const relatives = raw.familiares ?? [];
+  const direccionesCrudas = raw.direccionesIds?.length
+    ? raw.direccionesIds
+    : [raw.direccionId].filter(Boolean);
+  const domicilios = direccionesCrudas.map((direccion) => ({
+    id: getId(direccion),
+    Direccion: normalizeAddress(direccion),
+  }));
+  const dependientes = relatives.map(afiliadoToLegacy);
+  const creado = separarFechaHora(raw.creadoEn ?? raw.createdAt);
+  const actualizado = separarFechaHora(raw.actualizadoEn ?? raw.updatedAt);
+
   return {
     ...raw,
     id: getId(raw),
-    parentesco: { id: raw.parentesco, relacion: raw.parentesco ?? 'Titular' },
+    credencial:
+      raw.credencial ??
+      `${String(raw.numeroAfiliado ?? '').padStart(7, '0')}-${String(
+        raw.numeroIntegrante ?? ''
+      ).padStart(2, '0')}`,
+    parentesco: {
+      id: raw.parentesco,
+      relacion: raw.parentesco ?? 'Titular',
+    },
     tipoDocumento: {
       id: raw.tipoDocumento,
       tipo: raw.tipoDocumento ?? '',
@@ -200,9 +231,7 @@ export const afiliadoToLegacy = (raw = {}) => {
       nAfiliado: raw.numeroAfiliado,
       plan: { id: raw.plan, plan: raw.plan ?? '' },
     },
-    domicilios: getId(raw.direccionId)
-      ? [{ id: getId(raw.direccionId), Direccion: address }]
-      : [],
+    domicilios,
     situacionesTerapeuticas: (raw.situacionesTerapeuticas ?? []).map(
       (item) => ({
         id: getId(item),
@@ -213,13 +242,15 @@ export const afiliadoToLegacy = (raw = {}) => {
           fechaInicio: item?.fechaInicio ?? null,
           fechaFin: item?.fechaFin ?? null,
         },
-        situacion: {
-          id: getId(item),
-          nombre: item?.nombre ?? '',
-        },
+        situacion: { id: getId(item), nombre: item?.nombre ?? '' },
       })
     ),
-    grupoFamiliar: relatives.map(afiliadoToLegacy),
+    grupoFamiliar: dependientes,
+    dependientes,
+    createdAtFecha: creado.fecha,
+    createdAtHora: creado.hora,
+    updatedAtFecha: actualizado.fecha,
+    updatedAtHora: actualizado.hora,
   };
 };
 

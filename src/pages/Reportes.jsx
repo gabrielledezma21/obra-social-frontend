@@ -18,9 +18,16 @@ import {
 } from '../services/reportes';
 import PropTypes from 'prop-types';
 
+const formatearFecha = (valor) => {
+  if (!valor) return '—';
+  const fecha = new Date(valor);
+  if (Number.isNaN(fecha.getTime())) return '—';
+  return fecha.toLocaleDateString('es-AR', { timeZone: 'UTC' });
+};
+
 function TarjetaListado({ titulo, elementos, representar }) {
   return (
-    <Card>
+    <Card sx={{ height: '100%' }}>
       <CardContent>
         <Typography variant="h6" mb={2}>
           {titulo}
@@ -35,6 +42,11 @@ function TarjetaListado({ titulo, elementos, representar }) {
                   elemento.codigoPostal ||
                   indice
                 }
+                sx={{
+                  py: 1,
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
+                }}
               >
                 {representar(elemento)}
               </Box>
@@ -65,6 +77,7 @@ export default function Reportes() {
   });
   const [prestadoresSinAgenda, setPrestadoresSinAgenda] = useState([]);
   const [error, setError] = useState('');
+  const [periodoConsultado, setPeriodoConsultado] = useState(false);
 
   const cargarDatosGenerales = async () => {
     try {
@@ -86,12 +99,19 @@ export default function Reportes() {
   const buscarPeriodo = async () => {
     try {
       setError('');
+
+      if (desde && hasta && desde > hasta) {
+        setError('La fecha desde no puede ser posterior a la fecha hasta.');
+        return;
+      }
+
       const [afiliadosObtenidos, prestadoresObtenidos] = await Promise.all([
         obtenerAltasAfiliados(desde, hasta),
         obtenerAltasPrestadores(desde, hasta),
       ]);
       setAfiliados(afiliadosObtenidos);
       setPrestadores(prestadoresObtenidos);
+      setPeriodoConsultado(true);
     } catch (errorPeticion) {
       setError(errorPeticion.response?.data?.mensaje || errorPeticion.message);
     }
@@ -102,7 +122,8 @@ export default function Reportes() {
       <Box>
         <Typography variant="h4">Reportes administrativos</Typography>
         <Typography color="text.secondary">
-          Consultas requeridas por la Aplicación 1 de MedIntegral.
+          Consultá altas por período y el estado general de la red de
+          prestadores.
         </Typography>
       </Box>
 
@@ -144,6 +165,51 @@ export default function Reportes() {
           </Grid>
         </CardContent>
       </Card>
+
+      {periodoConsultado && (
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <TarjetaListado
+              titulo={`Afiliados dados de alta (${afiliados.total})`}
+              elementos={afiliados.elementos || []}
+              representar={(elemento) => (
+                <Box>
+                  <Typography fontWeight={600}>
+                    {elemento.nombre} {elemento.apellido}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    DNI {elemento.dni || '—'} · Credencial{' '}
+                    {String(elemento.numeroAfiliado || '').padStart(7, '0')}-
+                    {String(elemento.numeroIntegrante || '').padStart(2, '0')} ·
+                    Plan {elemento.plan || '—'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Alta: {formatearFecha(elemento.fechaAlta)}
+                  </Typography>
+                </Box>
+              )}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 6 }}>
+            <TarjetaListado
+              titulo={`Prestadores dados de alta (${prestadores.total})`}
+              elementos={prestadores.elementos || []}
+              representar={(elemento) => (
+                <Box>
+                  <Typography fontWeight={600}>{elemento.nombre}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    CUIT/CUIL {elemento.cuilCuit || '—'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Alta: {formatearFecha(elemento.fechaAlta)}
+                  </Typography>
+                </Box>
+              )}
+            />
+          </Grid>
+        </Grid>
+      )}
 
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 6 }}>

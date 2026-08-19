@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Typography, Snackbar, Alert } from '@mui/material';
+import { Typography, Snackbar, Alert, Stack } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import DetailsSection from '../common/details/DetailsSection';
 import { useAfiliado } from '../../context/AfiliadoContext';
@@ -16,7 +16,7 @@ export default function CoberturaDetailsSection() {
   const handleOpen = () => setOpenModal(true);
   const handleClose = () => setOpenModal(false);
 
-  const { Contrato } = afiliado;
+  const { Contrato, credencial, parentesco } = afiliado;
 
   const handleToastClose = () => setToast(null);
 
@@ -27,9 +27,18 @@ export default function CoberturaDetailsSection() {
         icon={AssignmentIcon}
         onEdit={handleOpen}
       >
-        <Typography>
-          <strong>Plan Médico: </strong> {Contrato?.plan?.plan}
-        </Typography>
+        <Stack spacing={0.75}>
+          <Typography>
+            <strong>Credencial: </strong> {credencial || '—'}
+          </Typography>
+          <Typography>
+            <strong>Parentesco: </strong>{' '}
+            {parentesco?.relacion || parentesco || '—'}
+          </Typography>
+          <Typography>
+            <strong>Plan médico: </strong> {Contrato?.plan?.plan || '—'}
+          </Typography>
+        </Stack>
       </DetailsSection>
 
       <CoberturaEditModal open={openModal} onClose={handleClose} />
