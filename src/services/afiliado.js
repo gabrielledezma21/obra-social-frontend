@@ -51,6 +51,11 @@ const construirDatosAfiliado = (formulario, opciones = {}) => ({
   direcciones: construirDirecciones(
     opciones.direcciones ?? formulario.direcciones
   ),
+  comparteDomicilioTitular: Boolean(
+    opciones.comparteDomicilioTitular ??
+      formulario.comparteDomicilioTitular ??
+      formulario.usaMismaDireccionTitular
+  ),
   plan: String(
     opciones.plan ??
       formulario.cobertura?.plan ??
@@ -96,6 +101,7 @@ const crearFamiliar = (familiar, titularId, datosTitular, datosAfiliado) =>
         : familiar.tieneFechaBaja
           ? familiar.vigenciaFin
           : null,
+      comparteDomicilioTitular: familiar.usaMismaDireccionTitular,
       direcciones: familiar.usaMismaDireccionTitular
         ? datosAfiliado.direcciones
         : familiar.direcciones,
@@ -302,10 +308,24 @@ export const updateAfiliadoCobertura = async (id, datos) =>
 export const updateAfiliadoDatosContacto = async (id, datos) =>
   (await clienteApi.put(`/afiliados/${id}`, datos)).data;
 
-export const updateAfiliadoDirecciones = async (id, datos) =>
+export const updateAfiliadoDirecciones = async (
+  id,
+  datos,
+  { usarDomicilioPropio = false } = {}
+) =>
   (
     await clienteApi.put(`/afiliados/${id}`, {
       direcciones: construirDirecciones(datos.direcciones),
+      ...(usarDomicilioPropio
+        ? { comparteDomicilioTitular: false }
+        : {}),
+    })
+  ).data;
+
+export const usarDomicilioTitularAfiliado = async (id) =>
+  (
+    await clienteApi.put(`/afiliados/${id}`, {
+      comparteDomicilioTitular: true,
     })
   ).data;
 
@@ -319,6 +339,7 @@ export const addDependiente = async (idAfiliado, datosDependiente) => {
         plan: titular.Contrato?.plan?.plan,
         fechaAlta: titular.vigenciaInicio,
         fechaBaja: titular.vigenciaFin,
+        comparteDomicilioTitular: datosDependiente.usaMismaDireccionTitular,
       })
     )
   ).data;
