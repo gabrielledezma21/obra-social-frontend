@@ -174,8 +174,12 @@ export const getAfiliadoById = async (id) => {
   return adaptarAfiliadoLegado(datos);
 };
 
-export const getReporteAfiliadoById = async () => {
-  throw new Error('La API actual todavía no ofrece reportes en PDF.');
+export const getReporteAfiliadoById = async (id) => {
+  if (!id) throw new Error('Se requiere un ID de afiliado');
+  const { data } = await clienteApi.get(`/reportes/afiliados/${id}/pdf`, {
+    responseType: 'blob',
+  });
+  return data;
 };
 
 export const updateAfiliadoDatosPersonales = async (id, datos) =>
