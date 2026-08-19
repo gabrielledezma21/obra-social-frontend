@@ -205,9 +205,14 @@ export default function GestionTurnoPublico() {
                   : error}
               </Alert>
               <Typography color="text.secondary">
-                Por seguridad, usá el botón del correo de confirmación que recibiste al reservar. El código visible por sí solo no autoriza cambios.
+                Por seguridad, usá el botón del correo de confirmación que
+                recibiste al reservar. El código visible por sí solo no autoriza
+                cambios.
               </Typography>
-              <Button variant="outlined" onClick={() => navegar('/portal/acceso')}>
+              <Button
+                variant="outlined"
+                onClick={() => navegar('/portal/acceso')}
+              >
                 Ir al acceso de MedIntegral
               </Button>
             </Stack>
@@ -298,7 +303,8 @@ export default function GestionTurnoPublico() {
 
               {turno.estado === 'RESERVADO' && !turno.puedeGestionarse && (
                 <Alert severity="info">
-                  Este turno ya está dentro de las 24 horas previas y no puede cancelarse o reagendarse desde el enlace.
+                  Este turno ya está dentro de las 24 horas previas y no puede
+                  cancelarse o reagendarse desde el enlace.
                 </Alert>
               )}
 
@@ -339,17 +345,21 @@ export default function GestionTurnoPublico() {
                     Elegí un nuevo horario
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Se mantiene el mismo prestador, especialidad y centro de atención.
+                    Se mantiene el mismo prestador, especialidad y centro de
+                    atención.
                   </Typography>
                 </Box>
 
                 {cargandoHorarios ? (
-                  <Box sx={{ py: 4, display: 'flex', justifyContent: 'center' }}>
+                  <Box
+                    sx={{ py: 4, display: 'flex', justifyContent: 'center' }}
+                  >
                     <CircularProgress size={28} />
                   </Box>
                 ) : horarios.length === 0 ? (
                   <Alert severity="info">
-                    No encontramos horarios alternativos disponibles en las próximas semanas.
+                    No encontramos horarios alternativos disponibles en las
+                    próximas semanas.
                   </Alert>
                 ) : (
                   <Grid container spacing={1.5}>
@@ -384,7 +394,8 @@ export default function GestionTurnoPublico() {
         )}
 
         <Alert severity="info" variant="outlined">
-          Por seguridad, la clave incluida en el enlace se mantiene solo durante esta visita y no se guarda en el navegador.
+          Por seguridad, la clave incluida en el enlace se mantiene solo durante
+          esta visita y no se guarda en el navegador.
         </Alert>
       </Stack>
 
@@ -395,7 +406,9 @@ export default function GestionTurnoPublico() {
         <DialogTitle>Cancelar turno</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            ¿Confirmás la cancelación del turno del {formatearFecha(turno.fecha)} a las {turno.hora}? Esta acción quedará registrada en el historial.
+            ¿Confirmás la cancelación del turno del{' '}
+            {formatearFecha(turno.fecha)} a las {turno.hora}? Esta acción quedará
+            registrada en el historial.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
