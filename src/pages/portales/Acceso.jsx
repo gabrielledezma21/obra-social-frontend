@@ -198,6 +198,24 @@ export default function AccesoPortales() {
             );
           })}
         </Grid>
+
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          justifyContent="center"
+          alignItems="center"
+          spacing={1.5}
+          sx={{ mt: 3 }}
+        >
+          <Typography color="text.secondary">
+            ¿Ya tenés un turno reservado?
+          </Typography>
+          <Button
+            variant="outlined"
+            onClick={() => navegar('/turnos/gestionar')}
+          >
+            Gestionar turno con código
+          </Button>
+        </Stack>
       </Box>
     );
   }
