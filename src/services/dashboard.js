@@ -4,6 +4,8 @@ import { formatDireccion } from '../utils/formats/formatDireccion';
 
 let dashboardRequest = null;
 
+const ORDEN_PLANES_PRINCIPALES = ['210', '310', '410', '510'];
+
 const loadDashboardData = () => {
   if (!dashboardRequest) {
     dashboardRequest = Promise.all([
@@ -48,6 +50,19 @@ const groupCount = (values, fallback) =>
   )
     .map(([nombre, cantidad]) => ({ nombre, cantidad }))
     .sort(compararPorCantidadDescendente);
+
+const ordenarPlanes = (planes) => {
+  const planesPrincipales = ORDEN_PLANES_PRINCIPALES.filter((plan) =>
+    planes.includes(plan)
+  );
+  const planesAdicionales = planes
+    .filter((plan) => !ORDEN_PLANES_PRINCIPALES.includes(plan))
+    .sort((primero, segundo) =>
+      primero.localeCompare(segundo, 'es', { numeric: true })
+    );
+
+  return [...planesPrincipales, ...planesAdicionales];
+};
 
 export const getAfiliadosTotales = async () =>
   (await loadDashboardData()).afiliados.length;
@@ -119,7 +134,7 @@ export const getPrestadoresSinAgenda = async () => {
 
 export const getPlanesMedicosPorMes = async () => {
   const { afiliados } = await loadDashboardData();
-  const planesDisponibles = new Set();
+  const planesDisponibles = new Set(ORDEN_PLANES_PRINCIPALES);
 
   const grouped = afiliados.reduce((result, member) => {
     if (!member.fechaAlta) return result;
@@ -131,7 +146,7 @@ export const getPlanesMedicosPorMes = async () => {
       date.getUTCMonth() + 1
     ).padStart(2, '0')}`;
     const mes = new Intl.DateTimeFormat('es-AR', {
-      month: 'short',
+      month: 'long',
       year: 'numeric',
       timeZone: 'UTC',
     }).format(date);
@@ -147,9 +162,7 @@ export const getPlanesMedicosPorMes = async () => {
     return result;
   }, {});
 
-  const planes = [...planesDisponibles].sort((primero, segundo) =>
-    primero.localeCompare(segundo, 'es', { numeric: true })
-  );
+  const planes = ordenarPlanes([...planesDisponibles]);
 
   return Object.values(grouped)
     .sort((primero, segundo) => primero.orden - segundo.orden)
