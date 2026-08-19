@@ -22,3 +22,20 @@ test('el reporte individual descarga un PDF real desde el backend', () => {
   assert.match(servicio, /responseType: 'blob'/);
   assert.doesNotMatch(servicio, /todavía no ofrece reportes en PDF/);
 });
+
+test('el dashboard ordena especialidades y localidades de mayor a menor', () => {
+  const dashboard = leer('src/services/dashboard.js');
+
+  assert.match(dashboard, /segundo\.cantidad - primero\.cantidad/);
+  assert.match(dashboard, /\.sort\(compararPorCantidadDescendente\)/);
+});
+
+test('el dashboard incluye todos los planes en todos los meses', () => {
+  const dashboard = leer('src/services/dashboard.js');
+  const grafico = leer('src/components/dashboard/PlanesMedicosPorMes.jsx');
+
+  assert.match(dashboard, /planesDisponibles = new Set\(\)/);
+  assert.match(dashboard, /cantidades\[plan\] \?\? 0/);
+  assert.match(grafico, /flatMap\(\(periodo\) => Object\.keys\(periodo\.planes \|\| \{\}\)\)/);
+  assert.match(grafico, /periodo\.planes\?\.\[plan\] \?\? 0/);
+});
