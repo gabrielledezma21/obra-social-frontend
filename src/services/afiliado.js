@@ -58,6 +58,10 @@ const construirDatosAfiliado = (formulario, opciones = {}) => ({
       ''
   ),
   fechaAlta: convertirAFecha(opciones.fechaAlta ?? formulario.vigenciaInicio),
+  fechaBaja: convertirAFecha(
+    opciones.fechaBaja ??
+      (formulario.tieneFechaBaja ? formulario.vigenciaFin : null)
+  ),
   afiliadoTitularId: opciones.afiliadoTitularId ?? null,
 });
 
@@ -87,6 +91,11 @@ const crearFamiliar = (familiar, titularId, datosTitular, datosAfiliado) =>
       fechaAlta: familiar.usaMismaVigenciaTitular
         ? datosTitular.fechaAlta
         : familiar.vigenciaInicio,
+      fechaBaja: familiar.usaMismaVigenciaTitular
+        ? datosTitular.fechaBaja
+        : familiar.tieneFechaBaja
+          ? familiar.vigenciaFin
+          : null,
       direcciones: familiar.usaMismaDireccionTitular
         ? datosAfiliado.direcciones
         : familiar.direcciones,
@@ -263,18 +272,28 @@ export const getReporteAfiliadoById = async (id) => {
   return data;
 };
 
-export const updateAfiliadoDatosPersonales = async (id, datos) =>
-  (
-    await clienteApi.put(`/afiliados/${id}`, {
-      tipoDocumento: obtenerTipoDocumento(datos.tipoDocumentoId),
-      dni: Number(datos.numeroDocumento),
-      nombre: datos.nombre,
-      apellido: datos.apellido,
-      fechaNacimiento: convertirAFecha(datos.fechaNacimiento),
-      fechaAlta: datos.vigenciaInicio,
-      fechaBaja: datos.tieneFechaBaja ? datos.vigenciaFin : null,
-    })
-  ).data;
+export const updateAfiliadoDatosPersonales = async (
+  id,
+  datos,
+  incluirFechaBaja = true
+) => {
+  const payload = {
+    tipoDocumento: obtenerTipoDocumento(datos.tipoDocumentoId),
+    dni: Number(datos.numeroDocumento),
+    nombre: datos.nombre,
+    apellido: datos.apellido,
+    fechaNacimiento: convertirAFecha(datos.fechaNacimiento),
+    fechaAlta: convertirAFecha(datos.vigenciaInicio),
+  };
+
+  if (incluirFechaBaja) {
+    payload.fechaBaja = datos.tieneFechaBaja
+      ? convertirAFecha(datos.vigenciaFin)
+      : null;
+  }
+
+  return (await clienteApi.put(`/afiliados/${id}`, payload)).data;
+};
 
 export const updateAfiliadoCobertura = async (id, datos) =>
   (await clienteApi.put(`/afiliados/${id}`, { plan: String(datos.planId) }))
@@ -299,6 +318,7 @@ export const addDependiente = async (idAfiliado, datosDependiente) => {
         afiliadoTitularId: idAfiliado,
         plan: titular.Contrato?.plan?.plan,
         fechaAlta: titular.vigenciaInicio,
+        fechaBaja: titular.vigenciaFin,
       })
     )
   ).data;
