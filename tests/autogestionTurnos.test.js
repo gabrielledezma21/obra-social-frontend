@@ -31,9 +31,7 @@ test('la autogestion es accesible sin pasar por ProtectorRuta', async () => {
 });
 
 test('la pantalla publica permite consultar cancelar y reagendar', async () => {
-  const pagina = await leerFuente(
-    'src/pages/portales/GestionPublicaTurno.jsx'
-  );
+  const pagina = await leerFuente('src/pages/portales/GestionPublicaTurno.jsx');
 
   assert.match(pagina, /autogestionTurnos\.consultar/);
   assert.match(pagina, /autogestionTurnos\.obtenerDisponibilidad/);
