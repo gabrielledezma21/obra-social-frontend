@@ -59,6 +59,7 @@ export default function TurnosAfiliado({
 }) {
   const [modo, setModo] = useState('listado');
   const [pestanaTurnos, setPestanaTurnos] = useState(0);
+  const [mensajeReserva, setMensajeReserva] = useState('');
 
   useEffect(() => {
     const manejarNavegacionTurnos = (evento) => {
@@ -91,6 +92,9 @@ export default function TurnosAfiliado({
     if (reservado) {
       setModo('listado');
       setPestanaTurnos(0);
+      setMensajeReserva(
+        'Turno reservado correctamente. Tu código de reserva queda visible en Mis turnos y, si el correo está configurado, recibirás también el enlace seguro para gestionarlo.'
+      );
     }
   };
 
@@ -152,12 +156,21 @@ export default function TurnosAfiliado({
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => setModo('sacar')}
+          onClick={() => {
+            setMensajeReserva('');
+            setModo('sacar');
+          }}
           sx={{ textTransform: 'none' }}
         >
           Sacar turno
         </Button>
       </Stack>
+
+      {mensajeReserva && (
+        <Alert severity="success" onClose={() => setMensajeReserva('')}>
+          {mensajeReserva}
+        </Alert>
+      )}
 
       <Tabs
         value={pestanaTurnos}
@@ -209,6 +222,15 @@ export default function TurnosAfiliado({
                         <Typography variant="body2" color="text.secondary">
                           {turno.hora || 'Hora sin informar'}
                         </Typography>
+                        {turno.codigoReserva && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mt: 0.5 }}
+                          >
+                            Código: {turno.codigoReserva}
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell>
                         {turno.prestadorId?.nombre || 'Prestador'}
