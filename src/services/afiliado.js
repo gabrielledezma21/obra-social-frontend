@@ -316,9 +316,7 @@ export const updateAfiliadoDirecciones = async (
   (
     await clienteApi.put(`/afiliados/${id}`, {
       direcciones: construirDirecciones(datos.direcciones),
-      ...(usarDomicilioPropio
-        ? { comparteDomicilioTitular: false }
-        : {}),
+      ...(usarDomicilioPropio ? { comparteDomicilioTitular: false } : {}),
     })
   ).data;
 

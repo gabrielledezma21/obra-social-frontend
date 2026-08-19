@@ -245,11 +245,7 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     const aplicarAlGrupo = esTitular || aplicarAGrupoFamiliar;
 
     try {
-      await modificarFechaBajaAfiliado(
-        afiliado.id,
-        fechaBaja,
-        aplicarAlGrupo
-      );
+      await modificarFechaBajaAfiliado(afiliado.id, fechaBaja, aplicarAlGrupo);
       const updated = await fetchAfiliado();
       finishWithMessage({
         success: `Fecha de baja modificada exitosamente${aplicarAlGrupo ? ' para todo el grupo familiar' : ''}`,

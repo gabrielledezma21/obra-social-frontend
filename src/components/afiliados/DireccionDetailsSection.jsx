@@ -49,9 +49,7 @@ export default function DireccionDetailsSection() {
         icon={PlaceIcon}
         onEdit={esTitular || !comparteDomicilio ? handleOpen : undefined}
         editTooltip={
-          esTitular
-            ? 'Editar domicilio familiar'
-            : 'Editar domicilio propio'
+          esTitular ? 'Editar domicilio familiar' : 'Editar domicilio propio'
         }
         action={accionDomicilio}
       >
