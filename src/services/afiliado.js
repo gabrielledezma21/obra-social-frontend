@@ -76,9 +76,6 @@ const obtenerListado = async (
   return formatearListadoAfiliados(paginar(afiliadosFiltrados, pagina, limite));
 };
 
-// Esta API pública pertenece al frontend original y se conserva únicamente
-// para no romper sus consumidores heredados. Toda la implementación nueva y
-// los portales agregados en esta mejora utilizan identificadores en español.
 export const createAfiliado = async (datosAfiliado) => {
   const datosTitular = construirDatosAfiliado(datosAfiliado, {
     parentesco: 'Titular',
@@ -168,10 +165,70 @@ export const getTitulares = async (filtros = {}, pagina = 0, limite = 10) => {
   }
 };
 
+const completarGrupoFamiliar = async (datos) => {
+  if (datos?.parentesco === 'Titular' || !datos?.afiliadoTitularId) {
+    return datos;
+  }
+
+  const titularId = obtenerId(datos.afiliadoTitularId);
+  if (!titularId) return datos;
+
+  try {
+    const { data: titular } = await clienteApi.get(`/afiliados/${titularId}`);
+    const grupo = [titular, ...(titular.familiares ?? [])].filter(
+      (integrante) => String(obtenerId(integrante)) !== String(obtenerId(datos))
+    );
+    return { ...datos, familiares: grupo };
+  } catch {
+    return datos;
+  }
+};
+
+const completarSituacionesTerapeuticas = async (datos) => {
+  try {
+    const { data: reporte } = await clienteApi.get(
+      `/reportes/situaciones/${obtenerId(datos)}`
+    );
+    const idObjetivo = String(obtenerId(datos));
+    const novedades = (reporte?.novedades ?? []).filter(
+      (novedad) => String(obtenerId(novedad.afiliadoId)) === idObjetivo
+    );
+
+    const porSituacion = new Map(
+      (datos.situacionesTerapeuticas ?? []).map((situacion) => [
+        String(obtenerId(situacion)),
+        { ...situacion },
+      ])
+    );
+
+    novedades.forEach((novedad) => {
+      const situacion = novedad.situacionTerapeuticaId;
+      const idSituacion = String(obtenerId(situacion));
+      if (!idSituacion) return;
+      const actual = porSituacion.get(idSituacion) ?? situacion ?? {};
+      porSituacion.set(idSituacion, {
+        ...actual,
+        fechaInicio: novedad.fechaInicio ?? actual.fechaInicio ?? null,
+        fechaFin: novedad.fechaFin ?? actual.fechaFin ?? null,
+        activa: novedad.activa ?? actual.activa ?? true,
+      });
+    });
+
+    return {
+      ...datos,
+      situacionesTerapeuticas: [...porSituacion.values()],
+    };
+  } catch {
+    return datos;
+  }
+};
+
 export const getAfiliadoById = async (id) => {
   if (!id) throw new Error('Se requiere un ID de afiliado');
-  const { data: datos } = await clienteApi.get(`/afiliados/${id}`);
-  return adaptarAfiliadoLegado(datos);
+  const { data } = await clienteApi.get(`/afiliados/${id}`);
+  const conGrupo = await completarGrupoFamiliar(data);
+  const completo = await completarSituacionesTerapeuticas(conGrupo);
+  return adaptarAfiliadoLegado(completo);
 };
 
 export const getReporteAfiliadoById = async (id) => {
