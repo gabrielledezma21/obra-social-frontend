@@ -1,13 +1,19 @@
-export const leerCredencialesTurnoDesdeUbicacion = (ubicacion = window.location) => {
+export const leerCredencialesTurnoDesdeUbicacion = (
+  ubicacion = window.location
+) => {
   const parametros = new URLSearchParams(ubicacion.search || '');
   const fragmento = new URLSearchParams(
     String(ubicacion.hash || '').replace(/^#/, '')
   );
 
   return {
-    codigoReserva: String(parametros.get('codigo') || '').trim().toUpperCase(),
+    codigoReserva: String(parametros.get('codigo') || '')
+      .trim()
+      .toUpperCase(),
     tokenGestion: String(fragmento.get('token') || '').trim(),
-    accion: String(fragmento.get('accion') || 'ver').trim().toLowerCase(),
+    accion: String(fragmento.get('accion') || 'ver')
+      .trim()
+      .toLowerCase(),
   };
 };
 
