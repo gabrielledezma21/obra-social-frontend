@@ -59,6 +59,8 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     setGlobalLoading(false);
   };
 
+  const esTitular = afiliado?.parentesco === 'Titular';
+
   const updateDatosPersonales = async (data) => {
     if (!afiliado?.id) return;
     setGlobalLoading(true);
@@ -75,7 +77,16 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     };
 
     try {
-      await updateAfiliadoDatosPersonales(afiliado.id, payload);
+      await updateAfiliadoDatosPersonales(afiliado.id, payload, !esTitular);
+
+      if (esTitular) {
+        await modificarFechaBajaAfiliado(
+          afiliado.id,
+          data.tieneFechaBaja ? data.vigenciaFin : null,
+          true
+        );
+      }
+
       const updated = await fetchAfiliado();
       finishWithMessage({ success: 'Datos personales actualizados con éxito' });
       return updated;
@@ -165,7 +176,12 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     setGlobalLoading(true);
 
     try {
-      await deleteAfiliadoById(afiliado.id, vigenciaFin);
+      if (esTitular) {
+        await modificarFechaBajaAfiliado(afiliado.id, vigenciaFin, true);
+      } else {
+        await deleteAfiliadoById(afiliado.id, vigenciaFin);
+      }
+
       const updated = await fetchAfiliado();
       finishWithMessage({
         success: `Afiliado dado de baja exitosamente. Fecha de baja: ${vigenciaFin}`,
@@ -200,15 +216,17 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     if (!afiliado?.id) return false;
     setGlobalLoading(true);
 
+    const aplicarAlGrupo = esTitular || aplicarAGrupoFamiliar;
+
     try {
       await modificarFechaBajaAfiliado(
         afiliado.id,
         fechaBaja,
-        aplicarAGrupoFamiliar
+        aplicarAlGrupo
       );
       const updated = await fetchAfiliado();
       finishWithMessage({
-        success: `Fecha de baja modificada exitosamente${aplicarAGrupoFamiliar ? ' para todo el grupo familiar' : ''}`,
+        success: `Fecha de baja modificada exitosamente${aplicarAlGrupo ? ' para todo el grupo familiar' : ''}`,
       });
       return { success: true, updated };
     } catch {
@@ -221,11 +239,13 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     if (!afiliado?.id) return false;
     setGlobalLoading(true);
 
+    const reincorporarGrupo = esTitular || reincorporarGrupoFamiliar;
+
     try {
-      await reincorporarAfiliado(afiliado.id, reincorporarGrupoFamiliar);
+      await reincorporarAfiliado(afiliado.id, reincorporarGrupo);
       const updated = await fetchAfiliado();
       finishWithMessage({
-        success: `Afiliado reincorporado exitosamente${reincorporarGrupoFamiliar ? ' junto con su grupo familiar' : ''}`,
+        success: `Afiliado reincorporado exitosamente${reincorporarGrupo ? ' junto con su grupo familiar' : ''}`,
       });
       return { success: true, updated };
     } catch {
