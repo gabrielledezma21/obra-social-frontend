@@ -45,12 +45,20 @@ export default function PlanesMedicosPorMes() {
     );
   }
 
-  const dataset = planesMedicosPorMes.map((d) => ({
-    mes: d.mes,
-    ...d.planes,
-  }));
+  const planKeys = [
+    ...new Set(
+      planesMedicosPorMes.flatMap((periodo) => Object.keys(periodo.planes || {}))
+    ),
+  ].sort((primero, segundo) =>
+    primero.localeCompare(segundo, 'es', { numeric: true })
+  );
 
-  const planKeys = Object.keys(planesMedicosPorMes[0]?.planes || {});
+  const dataset = planesMedicosPorMes.map((periodo) => ({
+    mes: periodo.mes,
+    ...Object.fromEntries(
+      planKeys.map((plan) => [plan, periodo.planes?.[plan] ?? 0])
+    ),
+  }));
 
   const colors = ['#00B1EA', '#4CAF50', '#FFC107', '#F44336', '#FF8E00'];
 
