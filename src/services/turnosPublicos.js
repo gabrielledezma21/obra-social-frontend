@@ -1,7 +1,9 @@
 import clienteApi from './api';
 
 const publicar = (ruta, datos) =>
-  clienteApi.post(`/publico/turnos/${ruta}`, datos).then((respuesta) => respuesta.data);
+  clienteApi
+    .post(`/publico/turnos/${ruta}`, datos)
+    .then((respuesta) => respuesta.data);
 
 export const consultarTurnoPublico = (codigoReserva, tokenGestion) =>
   publicar('consultar', { codigoReserva, tokenGestion });
