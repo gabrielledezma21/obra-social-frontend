@@ -32,11 +32,9 @@ export const toTime = (value) => {
 };
 
 export const normalizeAddress = (value = {}) => {
-  const address =
-    value?.direccionId ?? value?.Direccion ?? value?.direccion ?? value;
+  const address = value?.direccionId ?? value?.Direccion ?? value?.direccion ?? value;
   const provincia = address?.provincia ?? address?.Provincia ?? '';
-  const provinciaNombre =
-    typeof provincia === 'object' ? (provincia?.nombre ?? '') : provincia;
+  const provinciaNombre = typeof provincia === 'object' ? (provincia?.nombre ?? '') : provincia;
 
   return {
     id: getId(address),
@@ -46,9 +44,7 @@ export const normalizeAddress = (value = {}) => {
     codigoPostal: address?.codigoPostal ?? '',
     localidad: address?.localidad ?? '',
     provincia: provinciaNombre,
-    Provincia: provinciaNombre
-      ? { id: provinciaNombre, nombre: provinciaNombre }
-      : null,
+    Provincia: provinciaNombre ? { id: provinciaNombre, nombre: provinciaNombre } : null,
   };
 };
 
@@ -92,8 +88,7 @@ export const rowsToSchedule = (rows = [], duration = null) => {
 
   return {
     dias,
-    duracionTurno:
-      duration ?? rows.find((row) => row.duracion != null)?.duracion ?? null,
+    duracionTurno: duration ?? rows.find((row) => row.duracion != null)?.duracion ?? null,
   };
 };
 
@@ -105,20 +100,14 @@ export const paginate = (items, page = 0, limit = 10) => ({
 });
 
 const includes = (value, search) =>
-  String(value ?? '')
-    .toLocaleLowerCase('es')
-    .includes(search);
+  String(value ?? '').toLocaleLowerCase('es').includes(search);
 
 export const filterByText = (items, filters = {}, fields = []) => {
-  const search = String(
-    filters.textInputSearch ?? filters.search ?? filters.nombre ?? ''
-  )
+  const search = String(filters.textInputSearch ?? filters.search ?? filters.nombre ?? '')
     .trim()
     .toLocaleLowerCase('es');
   if (!search) return items;
-  return items.filter((item) =>
-    fields.some((field) => includes(field(item), search))
-  );
+  return items.filter((item) => fields.some((field) => includes(field(item), search)));
 };
 
 export const prestadorToLegacy = (raw = {}) => {
@@ -136,10 +125,7 @@ export const prestadorToLegacy = (raw = {}) => {
     id: getId(raw),
     integraCentroMedico: Boolean(raw.centroMedicoQueIntegra),
     centroMedicoId: getId(raw.centroMedicoQueIntegra),
-    CentroMedico:
-      typeof raw.centroMedicoQueIntegra === 'object'
-        ? raw.centroMedicoQueIntegra
-        : null,
+    CentroMedico: typeof raw.centroMedicoQueIntegra === 'object' ? raw.centroMedicoQueIntegra : null,
     Emails: raw.emails ?? [],
     Telefonos: raw.telefonos ?? [],
     Especialidad: (raw.especialidades ?? []).map((item) => ({
@@ -166,10 +152,7 @@ export const agendaToLegacy = (raw = {}) => {
     prestador: {
       id: getId(provider),
       nombre: provider?.nombre ?? '',
-      especialidades: (provider?.especialidades ?? []).map((item) => ({
-        ...item,
-        id: getId(item),
-      })),
+      especialidades: (provider?.especialidades ?? []).map((item) => ({ ...item, id: getId(item) })),
       horarios: scheduleToRows(center?.horarioId),
     },
     especialidad: {
@@ -181,17 +164,37 @@ export const agendaToLegacy = (raw = {}) => {
   };
 };
 
+const separarFechaHora = (valor) => {
+  if (!valor) return { fecha: null, hora: null };
+  const fecha = new Date(valor);
+  if (Number.isNaN(fecha.getTime())) return { fecha: null, hora: null };
+  return {
+    fecha: fecha.toLocaleDateString('es-AR'),
+    hora: fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
+  };
+};
+
 export const afiliadoToLegacy = (raw = {}) => {
-  const address = normalizeAddress(raw.direccionId);
   const relatives = raw.familiares ?? [];
+  const direccionesCrudas = raw.direccionesIds?.length
+    ? raw.direccionesIds
+    : [raw.direccionId].filter(Boolean);
+  const domicilios = direccionesCrudas.map((direccion) => ({
+    id: getId(direccion),
+    Direccion: normalizeAddress(direccion),
+  }));
+  const dependientes = relatives.map(afiliadoToLegacy);
+  const creado = separarFechaHora(raw.creadoEn ?? raw.createdAt);
+  const actualizado = separarFechaHora(raw.actualizadoEn ?? raw.updatedAt);
+
   return {
     ...raw,
     id: getId(raw),
+    credencial:
+      raw.credencial ??
+      `${String(raw.numeroAfiliado ?? '').padStart(7, '0')}-${String(raw.numeroIntegrante ?? '').padStart(2, '0')}`,
     parentesco: { id: raw.parentesco, relacion: raw.parentesco ?? 'Titular' },
-    tipoDocumento: {
-      id: raw.tipoDocumento,
-      tipo: raw.tipoDocumento ?? '',
-    },
+    tipoDocumento: { id: raw.tipoDocumento, tipo: raw.tipoDocumento ?? '' },
     numeroDocumento: raw.dni != null ? String(raw.dni) : '',
     vigenciaInicio: raw.fechaAlta ?? null,
     vigenciaFin: raw.fechaBaja ?? null,
@@ -200,30 +203,26 @@ export const afiliadoToLegacy = (raw = {}) => {
       nAfiliado: raw.numeroAfiliado,
       plan: { id: raw.plan, plan: raw.plan ?? '' },
     },
-    domicilios: getId(raw.direccionId)
-      ? [{ id: getId(raw.direccionId), Direccion: address }]
-      : [],
-    situacionesTerapeuticas: (raw.situacionesTerapeuticas ?? []).map(
-      (item) => ({
-        id: getId(item),
-        nombre: item?.nombre ?? '',
+    domicilios,
+    situacionesTerapeuticas: (raw.situacionesTerapeuticas ?? []).map((item) => ({
+      id: getId(item),
+      nombre: item?.nombre ?? '',
+      fechaInicio: item?.fechaInicio ?? null,
+      fechaFin: item?.fechaFin ?? null,
+      AfiliadoSituaciones: item?.AfiliadoSituaciones ?? {
         fechaInicio: item?.fechaInicio ?? null,
         fechaFin: item?.fechaFin ?? null,
-        AfiliadoSituaciones: item?.AfiliadoSituaciones ?? {
-          fechaInicio: item?.fechaInicio ?? null,
-          fechaFin: item?.fechaFin ?? null,
-        },
-        situacion: {
-          id: getId(item),
-          nombre: item?.nombre ?? '',
-        },
-      })
-    ),
-    grupoFamiliar: relatives.map(afiliadoToLegacy),
+      },
+      situacion: { id: getId(item), nombre: item?.nombre ?? '' },
+    })),
+    grupoFamiliar: dependientes,
+    dependientes,
+    createdAtFecha: creado.fecha,
+    createdAtHora: creado.hora,
+    updatedAtFecha: actualizado.fecha,
+    updatedAtHora: actualizado.hora,
   };
 };
 
 export const provinceName = (value) =>
-  typeof value === 'object'
-    ? (value?.nombre ?? value?.id ?? '')
-    : (value ?? '');
+  typeof value === 'object' ? (value?.nombre ?? value?.id ?? '') : (value ?? '');
