@@ -57,3 +57,20 @@ test('las fechas calendario no se convierten a la zona horaria local', () => {
   assert.match(detalle, /formatearFechaCalendario\(fechaNacimiento\)/);
   assert.match(detalle, /formatearFechaCalendario\(vigenciaFin\)/);
 });
+
+test('el grupo familiar hereda la fecha de baja del titular', () => {
+  const servicio = leer('src/services/afiliado.js');
+  const contexto = leer('src/context/AfiliadoContext.jsx');
+
+  assert.match(servicio, /fechaBaja: convertirAFecha/);
+  assert.match(servicio, /familiar\.usaMismaVigenciaTitular/);
+  assert.match(servicio, /\? datosTitular\.fechaBaja/);
+  assert.match(servicio, /fechaBaja: titular\.vigenciaFin/);
+  assert.match(contexto, /const esTitular = afiliado\?\.parentesco === 'Titular'/);
+  assert.match(
+    contexto,
+    /modificarFechaBajaAfiliado\(\s*afiliado\.id,\s*data\.tieneFechaBaja \? data\.vigenciaFin : null,\s*true/
+  );
+  assert.match(contexto, /const aplicarAlGrupo = esTitular \|\| aplicarAGrupoFamiliar/);
+  assert.match(contexto, /const reincorporarGrupo = esTitular \|\| reincorporarGrupoFamiliar/);
+});
