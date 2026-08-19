@@ -3,7 +3,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 const leer = (rutaRelativa) =>
-  fs.readFileSync(new URL(`../${rutaRelativa}`, import.meta.url), 'utf8');
+  fs
+    .readFileSync(new URL(`../${rutaRelativa}`, import.meta.url), 'utf8')
+    .replace(/\r\n/g, '\n');
 
 test('un familiar que comparte domicilio hereda la direccion del titular', () => {
   const servicio = leer('src/services/afiliado.js');
@@ -17,8 +19,14 @@ test('si falla un familiar se revierte el alta del titular', () => {
   const servicio = leer('src/services/afiliado.js');
 
   assert.match(servicio, /revertirAltaIncompleta/);
-  assert.match(servicio, /clienteApi\.delete\(`\/afiliados\/\$\{titularId\}`\)/);
-  assert.match(servicio, /catch \(error\) \{\n    await revertirAltaIncompleta\(titularId\);\n    throw error;/);
+  assert.match(
+    servicio,
+    /clienteApi\.delete\(`\/afiliados\/\$\{titularId\}`\)/
+  );
+  assert.match(
+    servicio,
+    /catch \(error\) \{\n {4}await revertirAltaIncompleta\(titularId\);\n {4}throw error;/
+  );
 });
 
 test('los errores 400 generales no se marcan como documento duplicado', () => {
@@ -66,7 +74,10 @@ test('el grupo familiar hereda la fecha de baja del titular', () => {
   assert.match(servicio, /familiar\.usaMismaVigenciaTitular/);
   assert.match(servicio, /\? datosTitular\.fechaBaja/);
   assert.match(servicio, /fechaBaja: titular\.vigenciaFin/);
-  assert.match(contexto, /const parentesco = afiliado\?\.parentesco\?\.relacion/);
+  assert.match(
+    contexto,
+    /const parentesco = afiliado\?\.parentesco\?\.relacion/
+  );
   assert.match(contexto, /const esTitular = parentesco === 'Titular'/);
   assert.match(
     contexto,
