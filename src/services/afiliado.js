@@ -48,7 +48,9 @@ const construirDatosAfiliado = (formulario, opciones = {}) => ({
     .filter(Boolean),
   emails: formulario.emails ?? [],
   telefonos: formulario.telefonos ?? [],
-  direcciones: construirDirecciones(formulario.direcciones),
+  direcciones: construirDirecciones(
+    opciones.direcciones ?? formulario.direcciones
+  ),
   plan: String(
     opciones.plan ??
       formulario.cobertura?.plan ??
@@ -76,6 +78,32 @@ const obtenerListado = async (
   return formatearListadoAfiliados(paginar(afiliadosFiltrados, pagina, limite));
 };
 
+const crearFamiliar = (familiar, titularId, datosTitular, datosAfiliado) =>
+  clienteApi.post(
+    '/afiliados',
+    construirDatosAfiliado(familiar, {
+      afiliadoTitularId: titularId,
+      plan: datosTitular.plan,
+      fechaAlta: familiar.usaMismaVigenciaTitular
+        ? datosTitular.fechaAlta
+        : familiar.vigenciaInicio,
+      direcciones: familiar.usaMismaDireccionTitular
+        ? datosAfiliado.direcciones
+        : familiar.direcciones,
+    })
+  );
+
+const revertirAltaIncompleta = async (titularId) => {
+  try {
+    await clienteApi.delete(`/afiliados/${titularId}`);
+  } catch (errorRollback) {
+    console.error(
+      'No se pudo revertir el alta incompleta del grupo familiar:',
+      errorRollback
+    );
+  }
+};
+
 export const createAfiliado = async (datosAfiliado) => {
   const datosTitular = construirDatosAfiliado(datosAfiliado, {
     parentesco: 'Titular',
@@ -97,20 +125,16 @@ export const createAfiliado = async (datosAfiliado) => {
   const { data: titular } = await clienteApi.post('/afiliados', datosTitular);
   const titularId = obtenerId(titular);
 
-  await Promise.all(
-    (datosAfiliado.grupoFamiliar ?? []).map((familiar) =>
-      clienteApi.post(
-        '/afiliados',
-        construirDatosAfiliado(familiar, {
-          afiliadoTitularId: titularId,
-          plan: datosTitular.plan,
-          fechaAlta: familiar.usaMismaVigenciaTitular
-            ? datosTitular.fechaAlta
-            : familiar.vigenciaInicio,
-        })
+  try {
+    await Promise.all(
+      (datosAfiliado.grupoFamiliar ?? []).map((familiar) =>
+        crearFamiliar(familiar, titularId, datosTitular, datosAfiliado)
       )
-    )
-  );
+    );
+  } catch (error) {
+    await revertirAltaIncompleta(titularId);
+    throw error;
+  }
 
   return { ...titular, id: titularId };
 };
