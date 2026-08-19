@@ -29,3 +29,31 @@ test('los errores 400 generales no se marcan como documento duplicado', () => {
   assert.match(formulario, /message=\{/);
   assert.match(formulario, /mensajeError/);
 });
+
+test('las fechas calendario no se convierten a la zona horaria local', () => {
+  const utilidad = leer('src/utils/fechaCalendario.js');
+  const modal = leer(
+    'src/components/afiliados/modals/DatosPersonalesEditModal.jsx'
+  );
+  const dashboard = leer('src/services/dashboard.js');
+  const detalle = leer(
+    'src/components/afiliados/DatosPersonalesDetailsSection.jsx'
+  );
+
+  assert.match(utilidad, /PATRON_FECHA_CALENDARIO/);
+  assert.match(utilidad, /getUTCFullYear/);
+  assert.match(modal, /obtenerFechaCalendario\(afiliado\.fechaNacimiento\)/);
+  assert.match(modal, /obtenerFechaCalendario\(afiliado\.vigenciaInicio\)/);
+  assert.match(modal, /obtenerFechaCalendario\(afiliado\.vigenciaFin\)/);
+  assert.doesNotMatch(
+    modal,
+    /dayjs\(afiliado\.fechaNacimiento\)\.format\('YYYY-MM-DD'\)/
+  );
+  assert.match(dashboard, /formatearFechaCalendario\(member\.fechaBaja\)/);
+  assert.doesNotMatch(
+    dashboard,
+    /new Date\(member\.fechaBaja\)\.toLocaleDateString/
+  );
+  assert.match(detalle, /formatearFechaCalendario\(fechaNacimiento\)/);
+  assert.match(detalle, /formatearFechaCalendario\(vigenciaFin\)/);
+});
