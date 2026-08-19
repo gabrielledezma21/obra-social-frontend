@@ -13,6 +13,7 @@ import {
   deleteAfiliadoById,
   updateAfiliadoDatosContacto,
   updateAfiliadoDirecciones,
+  usarDomicilioTitularAfiliado,
   addDependiente,
   modificarFechaBajaAfiliado,
   reincorporarAfiliado,
@@ -53,9 +54,9 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     fetchAfiliado();
   }, [afiliadoData, fetchAfiliado]);
 
-  const finishWithMessage = ({ success, error }) => {
+  const finishWithMessage = ({ success, error: errorMessage }) => {
     if (success) setSuccessMessage(success);
-    if (error) setError(error);
+    if (errorMessage) setError(errorMessage);
     setGlobalLoading(false);
   };
 
@@ -109,9 +110,7 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
       finishWithMessage({ success: 'Cobertura actualizada con éxito' });
       return updated;
     } catch {
-      finishWithMessage({
-        error: 'No se pudo actualizar la cobertura.',
-      });
+      finishWithMessage({ error: 'No se pudo actualizar la cobertura.' });
     }
   };
 
@@ -142,7 +141,10 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     }
   };
 
-  const updateDirecciones = async (direccionesData) => {
+  const updateDirecciones = async (
+    direccionesData,
+    { usarDomicilioPropio = false } = {}
+  ) => {
     if (!afiliado?.id) return;
     setGlobalLoading(true);
 
@@ -156,18 +158,39 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
         provinciaId: direccionItem.provincia?.id || direccionItem.provinciaId,
       }));
 
-      const payload = { direcciones: direccionesPayload };
-
-      await updateAfiliadoDirecciones(afiliado.id, payload);
+      await updateAfiliadoDirecciones(
+        afiliado.id,
+        { direcciones: direccionesPayload },
+        { usarDomicilioPropio }
+      );
       const updated = await fetchAfiliado();
       finishWithMessage({
-        success: 'Direcciones actualizadas con éxito',
+        success: usarDomicilioPropio
+          ? 'El afiliado ahora utiliza un domicilio propio.'
+          : 'Direcciones actualizadas con éxito',
       });
       return updated;
     } catch {
+      finishWithMessage({ error: 'No se pudieron actualizar las direcciones.' });
+    }
+  };
+
+  const usarDomicilioTitular = async () => {
+    if (!afiliado?.id || esTitular) return false;
+    setGlobalLoading(true);
+
+    try {
+      await usarDomicilioTitularAfiliado(afiliado.id);
+      const updated = await fetchAfiliado();
       finishWithMessage({
-        error: 'No se pudieron actualizar las direcciones.',
+        success: 'El afiliado ahora comparte el domicilio del titular.',
       });
+      return { success: true, updated };
+    } catch {
+      finishWithMessage({
+        error: 'No se pudo asignar el domicilio del titular.',
+      });
+      return { success: false };
     }
   };
 
@@ -267,6 +290,7 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
         updateCobertura,
         updateDatosContacto,
         updateDirecciones,
+        usarDomicilioTitular,
         darDeBaja,
         agregarDependiente,
         modificarFechaBaja,
