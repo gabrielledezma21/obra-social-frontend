@@ -25,7 +25,7 @@ test('la autogestion usa POST y no persiste el token en storage', () => {
   const servicio = leer('src/services/turnosPublicos.js');
   const pagina = leer('src/pages/portales/GestionTurnoPublico.jsx');
 
-  assert.match(servicio, /clienteApi\.post\(`\/publico\/turnos\/\$\{ruta\}`/);
+  assert.match(servicio, /\.post\(`\/publico\/turnos\/\$\{ruta\}`, datos\)/);
   assert.doesNotMatch(servicio, /\.get\(/);
   assert.doesNotMatch(pagina, /localStorage|sessionStorage/);
   assert.match(pagina, /limpiarFragmentoSensible/);
