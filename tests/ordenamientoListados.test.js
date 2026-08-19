@@ -9,7 +9,10 @@ test('el encabezado común permite ordenar al hacer click', () => {
   const encabezado = leer('src/components/common/lists/TableHeader.jsx');
 
   assert.match(encabezado, /TableSortLabel/);
-  assert.match(encabezado, /onRequestSort\(campo, esAscendente \? 'desc' : 'asc'\)/);
+  assert.match(
+    encabezado,
+    /onRequestSort\(campo, esAscendente \? 'desc' : 'asc'\)/
+  );
   assert.match(encabezado, /sortDirection/);
 });
 
