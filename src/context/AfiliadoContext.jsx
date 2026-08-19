@@ -60,7 +60,8 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     setGlobalLoading(false);
   };
 
-  const esTitular = afiliado?.parentesco === 'Titular';
+  const parentesco = afiliado?.parentesco?.relacion ?? afiliado?.parentesco;
+  const esTitular = parentesco === 'Titular';
 
   const updateDatosPersonales = async (data) => {
     if (!afiliado?.id) return;
