@@ -43,3 +43,29 @@ test('el dashboard incluye todos los planes en todos los meses', () => {
   assert.match(grafico, /label: `Plan \$\{key\}`/);
   assert.match(grafico, /Altas nuevas de afiliados por plan en cada mes/);
 });
+
+test('el detalle de afiliado conserva grupo familiar, direcciones y auditoría', () => {
+  const adaptadores = leer('src/services/apiAdapters.js');
+  const detalle = leer('src/pages/afiliados/Detalle.jsx');
+
+  assert.match(adaptadores, /dependientes,/);
+  assert.match(adaptadores, /grupoFamiliar: dependientes/);
+  assert.match(adaptadores, /raw\.direccionesIds\?\.length/);
+  assert.match(adaptadores, /createdAtFecha: creado\.fecha/);
+  assert.match(adaptadores, /updatedAtFecha: actualizado\.fecha/);
+  assert.doesNotMatch(detalle, /navigate\('\/403'/);
+});
+
+test('el detalle completa situaciones terapéuticas y grupo al abrir un familiar', () => {
+  const servicio = leer('src/services/afiliado.js');
+  const situaciones = leer(
+    'src/components/afiliados/SituacionesTerapeuticasDetailsSection.jsx'
+  );
+
+  assert.match(servicio, /completarGrupoFamiliar/);
+  assert.match(servicio, /\/reportes\/situaciones\/\$\{obtenerId\(datos\)\}/);
+  assert.match(servicio, /fechaInicio: novedad\.fechaInicio/);
+  assert.match(situaciones, /Situaciones terapéuticas/);
+  assert.match(situaciones, /Activa/);
+  assert.match(situaciones, /Finalizada/);
+});
