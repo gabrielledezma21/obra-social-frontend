@@ -3,6 +3,14 @@ import clienteApi from './api';
 const CLAVE_TOKEN = 'medintegral_token';
 const CLAVE_USUARIO = 'medintegral_usuario';
 
+const informarCredencialesTurno = (turno) => {
+  if (!turno?.codigoReserva || !turno?.tokenGestion) return;
+
+  window.alert(
+    `Turno reservado correctamente.\n\nCódigo: ${turno.codigoReserva}\nClave de gestión: ${turno.tokenGestion}\n\nGuardá estos datos. La clave se muestra una sola vez y permite gestionar el turno sin iniciar sesión.`
+  );
+};
+
 export const limpiarSesion = () => {
   localStorage.removeItem(CLAVE_TOKEN);
   localStorage.removeItem(CLAVE_USUARIO);
@@ -149,10 +157,14 @@ export const portalAfiliado = {
     clienteApi
       .get('/portal-afiliado/turnos')
       .then((respuesta) => respuesta.data),
-  reservarTurno: (datos) =>
-    clienteApi
-      .post('/portal-afiliado/turnos', datos)
-      .then((respuesta) => respuesta.data),
+  reservarTurno: async (datos) => {
+    const { data: turno } = await clienteApi.post(
+      '/portal-afiliado/turnos',
+      datos
+    );
+    informarCredencialesTurno(turno);
+    return turno;
+  },
   cancelarTurno: (id) =>
     clienteApi
       .post(`/portal-afiliado/turnos/${id}/cancelar`)
