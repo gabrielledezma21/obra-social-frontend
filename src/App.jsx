@@ -16,6 +16,7 @@ import AltaAfiliado from './pages/afiliados/Alta';
 import DetalleAfiliado from './pages/afiliados/Detalle';
 import AccesoPortales from './pages/portales/Acceso';
 import CambiarContrasena from './pages/portales/CambiarContrasena';
+import GestionPublicaTurno from './pages/portales/GestionPublicaTurno';
 import PortalAfiliado from './pages/portales/PortalAfiliado';
 import PortalPrestador from './pages/portales/PortalPrestador';
 import AccesoProhibido from './pages/403/Forbidden';
@@ -29,6 +30,7 @@ function Aplicacion() {
 
       <Route element={<DisenoPortal />}>
         <Route path="/portal/acceso" element={<AccesoPortales />} />
+        <Route path="/turnos/gestionar" element={<GestionPublicaTurno />} />
 
         <Route
           element={
