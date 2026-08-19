@@ -81,7 +81,11 @@ const DireccionEditContent = ({
           onConfirmCancel={onClose}
           cancelTitle={`¿Cancelar la edición de direcciones de ${afiliado.nombre}?`}
           cancelMessage="Si cancelás ahora, se perderán los cambios realizados."
-          confirmText={usarDomicilioPropio ? 'Guardar domicilio propio' : 'Guardar cambios'}
+          confirmText={
+            usarDomicilioPropio
+              ? 'Guardar domicilio propio'
+              : 'Guardar cambios'
+          }
           cancelText="Cancelar"
         />
       </DialogActions>
