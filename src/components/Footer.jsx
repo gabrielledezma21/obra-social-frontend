@@ -1,4 +1,4 @@
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, Link, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import BrandLogo from './common/BrandLogo';
 import './Footer.css';
@@ -13,12 +13,37 @@ export default function Footer({ sx }) {
 
         <Grid className="footer-text">
           <Typography variant="body2" className="footer-rights">
-            <a
-              href="https://github.com/DesApp-2025c2-Grupo3"
-              style={{ textDecoration: 'none', color: 'inherit' }}
+            MedIntegral · Desarrollado por{' '}
+            <Link
+              href="https://github.com/gabrielledezma21"
+              target="_blank"
+              rel="noopener noreferrer"
+              color="inherit"
+              underline="hover"
             >
-              © 2025 - Medicina Integral Group
-            </a>
+              Gabriel Ledezma
+            </Link>{' '}
+            ·{' '}
+            <Link
+              href="https://github.com/gabrielledezma21/obra-social-frontend"
+              target="_blank"
+              rel="noopener noreferrer"
+              color="inherit"
+              underline="hover"
+            >
+              Frontend
+            </Link>{' '}
+            ·{' '}
+            <Link
+              href="https://github.com/gabrielledezma21/obra-social"
+              target="_blank"
+              rel="noopener noreferrer"
+              color="inherit"
+              underline="hover"
+            >
+              Backend
+            </Link>{' '}
+            · © 2026
           </Typography>
         </Grid>
       </Grid>
