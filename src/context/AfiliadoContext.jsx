@@ -172,7 +172,9 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
       });
       return updated;
     } catch {
-      finishWithMessage({ error: 'No se pudieron actualizar las direcciones.' });
+      finishWithMessage({
+        error: 'No se pudieron actualizar las direcciones.',
+      });
     }
   };
 
