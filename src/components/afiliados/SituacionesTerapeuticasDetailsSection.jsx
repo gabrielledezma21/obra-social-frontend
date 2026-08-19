@@ -25,7 +25,8 @@ export default function SituacionesTerapeuticasDetailsSection() {
         <Stack spacing={1.5}>
           {situaciones.map((situacion) => {
             const fechaInicio = formatearFecha(
-              situacion.fechaInicio ?? situacion.AfiliadoSituaciones?.fechaInicio
+              situacion.fechaInicio ??
+                situacion.AfiliadoSituaciones?.fechaInicio
             );
             const fechaFin = formatearFecha(
               situacion.fechaFin ?? situacion.AfiliadoSituaciones?.fechaFin
@@ -47,7 +48,9 @@ export default function SituacionesTerapeuticasDetailsSection() {
                 <Box>
                   <Typography fontWeight={600}>{situacion.nombre}</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {fechaInicio ? `Desde ${fechaInicio}` : 'Sin fecha de inicio'}
+                    {fechaInicio
+                      ? `Desde ${fechaInicio}`
+                      : 'Sin fecha de inicio'}
                     {fechaFin ? ` hasta ${fechaFin}` : ''}
                   </Typography>
                 </Box>
