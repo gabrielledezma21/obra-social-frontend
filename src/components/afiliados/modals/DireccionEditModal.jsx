@@ -8,6 +8,7 @@ import {
   IconButton,
   Box,
   CircularProgress,
+  Alert,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ButtonsSection from '../../common/forms/FormActions';
@@ -28,6 +29,7 @@ const DireccionEditContent = ({
   modalLoading,
   onClose,
   updateDirecciones,
+  usarDomicilioPropio,
 }) => {
   const { setValidationError, clearErrors } = useFormValidationContext();
 
@@ -46,13 +48,21 @@ const DireccionEditContent = ({
       return;
     }
 
-    await updateDirecciones(direcciones);
+    await updateDirecciones(direcciones, { usarDomicilioPropio });
     onClose();
   };
 
   return (
     <>
       <DialogContent dividers>
+        {usarDomicilioPropio && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Al guardar, este integrante dejará de compartir el domicilio del
+            titular. Los futuros cambios en el domicilio familiar no afectarán
+            su dirección propia.
+          </Alert>
+        )}
+
         {modalLoading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
             <CircularProgress />
@@ -71,7 +81,7 @@ const DireccionEditContent = ({
           onConfirmCancel={onClose}
           cancelTitle={`¿Cancelar la edición de direcciones de ${afiliado.nombre}?`}
           cancelMessage="Si cancelás ahora, se perderán los cambios realizados."
-          confirmText="Guardar cambios"
+          confirmText={usarDomicilioPropio ? 'Guardar domicilio propio' : 'Guardar cambios'}
           cancelText="Cancelar"
         />
       </DialogActions>
@@ -79,7 +89,11 @@ const DireccionEditContent = ({
   );
 };
 
-export default function DireccionEditModal({ open, onClose }) {
+export default function DireccionEditModal({
+  open,
+  onClose,
+  usarDomicilioPropio = false,
+}) {
   const { afiliado, updateDirecciones } = useAfiliado();
   const [direcciones, setDirecciones] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
@@ -137,7 +151,9 @@ export default function DireccionEditModal({ open, onClose }) {
           alignItems: 'center',
         }}
       >
-        Editar direcciones de {afiliado.nombre}
+        {usarDomicilioPropio
+          ? `Definir domicilio propio de ${afiliado.nombre}`
+          : `Editar direcciones de ${afiliado.nombre}`}
         <IconButton onClick={onClose} size="small">
           <CloseIcon />
         </IconButton>
@@ -151,6 +167,7 @@ export default function DireccionEditModal({ open, onClose }) {
           modalLoading={modalLoading}
           onClose={onClose}
           updateDirecciones={updateDirecciones}
+          usarDomicilioPropio={usarDomicilioPropio}
         />
       </FormValidationProvider>
     </Dialog>
@@ -160,6 +177,7 @@ export default function DireccionEditModal({ open, onClose }) {
 DireccionEditModal.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
+  usarDomicilioPropio: PropTypes.bool,
 };
 
 DireccionEditContent.propTypes = {
@@ -169,4 +187,5 @@ DireccionEditContent.propTypes = {
   modalLoading: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   updateDirecciones: PropTypes.func.isRequired,
+  usarDomicilioPropio: PropTypes.bool.isRequired,
 };
