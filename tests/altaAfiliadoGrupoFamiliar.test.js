@@ -9,7 +9,7 @@ test('un familiar que comparte domicilio hereda la direccion del titular', () =>
   const servicio = leer('src/services/afiliado.js');
 
   assert.match(servicio, /familiar\.usaMismaDireccionTitular/);
-  assert.match(servicio, /\? datosAfiliado\.direcciones/);
+  assert.match(servicio, /comparteDomicilioTitular/);
   assert.match(servicio, /opciones\.direcciones \?\? formulario\.direcciones/);
 });
 
@@ -66,11 +66,38 @@ test('el grupo familiar hereda la fecha de baja del titular', () => {
   assert.match(servicio, /familiar\.usaMismaVigenciaTitular/);
   assert.match(servicio, /\? datosTitular\.fechaBaja/);
   assert.match(servicio, /fechaBaja: titular\.vigenciaFin/);
-  assert.match(contexto, /const esTitular = afiliado\?\.parentesco === 'Titular'/);
+  assert.match(contexto, /const parentesco = afiliado\?\.parentesco\?\.relacion/);
+  assert.match(contexto, /const esTitular = parentesco === 'Titular'/);
   assert.match(
     contexto,
     /modificarFechaBajaAfiliado\(\s*afiliado\.id,\s*data\.tieneFechaBaja \? data\.vigenciaFin : null,\s*true/
   );
-  assert.match(contexto, /const aplicarAlGrupo = esTitular \|\| aplicarAGrupoFamiliar/);
-  assert.match(contexto, /const reincorporarGrupo = esTitular \|\| reincorporarGrupoFamiliar/);
+  assert.match(
+    contexto,
+    /const aplicarAlGrupo = esTitular \|\| aplicarAGrupoFamiliar/
+  );
+  assert.match(
+    contexto,
+    /const reincorporarGrupo = esTitular \|\| reincorporarGrupoFamiliar/
+  );
+});
+
+test('el domicilio compartido solo se edita desde el titular', () => {
+  const detalle = leer('src/components/afiliados/DireccionDetailsSection.jsx');
+  const modal = leer('src/components/afiliados/modals/DireccionEditModal.jsx');
+  const contexto = leer('src/context/AfiliadoContext.jsx');
+  const servicio = leer('src/services/afiliado.js');
+
+  assert.match(detalle, /Domicilio compartido con el titular/);
+  assert.match(detalle, /Usar domicilio propio/);
+  assert.match(detalle, /Usar domicilio del titular/);
+  assert.match(
+    detalle,
+    /onEdit=\{esTitular \|\| !comparteDomicilio \? handleOpen : undefined\}/
+  );
+  assert.match(modal, /usarDomicilioPropio/);
+  assert.match(contexto, /usarDomicilioTitularAfiliado/);
+  assert.match(contexto, /usarDomicilioTitular/);
+  assert.match(servicio, /comparteDomicilioTitular: false/);
+  assert.match(servicio, /comparteDomicilioTitular: true/);
 });
