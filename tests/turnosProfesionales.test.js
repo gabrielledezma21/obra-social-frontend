@@ -1,9 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {
-  leerCredencialesTurnoDesdeUbicacion,
-} from '../src/utils/enlaceTurno.js';
+import { leerCredencialesTurnoDesdeUbicacion } from '../src/utils/enlaceTurno.js';
 
 const leer = (rutaRelativa) =>
   fs
