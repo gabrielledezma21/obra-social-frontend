@@ -62,7 +62,9 @@ export default function PlanesMedicosPorMes() {
 
   const planKeys = ordenarPlanes([
     ...new Set(
-      planesMedicosPorMes.flatMap((periodo) => Object.keys(periodo.planes || {}))
+      planesMedicosPorMes.flatMap((periodo) =>
+        Object.keys(periodo.planes || {})
+      )
     ),
   ]);
 
@@ -123,8 +125,8 @@ export default function PlanesMedicosPorMes() {
           color="text.secondary"
           sx={{ mt: 2, textAlign: 'center' }}
         >
-          Altas nuevas de afiliados por plan en cada mes. Cada grupo muestra
-          los planes lado a lado para comparar su crecimiento mensual.
+          Altas nuevas de afiliados por plan en cada mes. Cada grupo muestra los
+          planes lado a lado para comparar su crecimiento mensual.
         </Typography>
       </CardContent>
     </Card>
