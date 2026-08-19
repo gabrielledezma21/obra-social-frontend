@@ -1,3 +1,4 @@
+import GitHubIcon from '@mui/icons-material/GitHub';
 import { Box, Grid, Link, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import BrandLogo from './common/BrandLogo';
@@ -5,46 +6,43 @@ import './Footer.css';
 
 export default function Footer({ sx }) {
   return (
-    <Box className="footer-container" sx={sx}>
+    <Box component="footer" className="footer-container" sx={sx}>
       <Grid container className="footer-grid">
-        <Grid className="footer-logo">
+        <Grid className="footer-brand">
           <BrandLogo clickable size="medium" />
+
+          <Box className="footer-copy">
+            <Typography variant="body2" className="footer-project">
+              MedIntegral
+            </Typography>
+            <Typography variant="caption" className="footer-credit">
+              Desarrollado por{' '}
+              <Link
+                href="https://github.com/gabrielledezma21"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="footer-author"
+                underline="none"
+              >
+                Gabriel Ledezma
+              </Link>{' '}
+              · © 2026
+            </Typography>
+          </Box>
         </Grid>
 
-        <Grid className="footer-text">
-          <Typography variant="body2" className="footer-rights">
-            MedIntegral · Desarrollado por{' '}
-            <Link
-              href="https://github.com/gabrielledezma21"
-              target="_blank"
-              rel="noopener noreferrer"
-              color="inherit"
-              underline="hover"
-            >
-              Gabriel Ledezma
-            </Link>{' '}
-            ·{' '}
-            <Link
-              href="https://github.com/gabrielledezma21/obra-social-frontend"
-              target="_blank"
-              rel="noopener noreferrer"
-              color="inherit"
-              underline="hover"
-            >
-              Frontend
-            </Link>{' '}
-            ·{' '}
-            <Link
-              href="https://github.com/gabrielledezma21/obra-social"
-              target="_blank"
-              rel="noopener noreferrer"
-              color="inherit"
-              underline="hover"
-            >
-              Backend
-            </Link>{' '}
-            · © 2026
-          </Typography>
+        <Grid className="footer-actions">
+          <Link
+            href="https://github.com/gabrielledezma21"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-github-link"
+            underline="none"
+            aria-label="Ver perfil de Gabriel Ledezma en GitHub"
+          >
+            <GitHubIcon fontSize="small" />
+            GitHub
+          </Link>
         </Grid>
       </Grid>
     </Box>
