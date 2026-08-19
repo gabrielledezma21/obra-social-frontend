@@ -70,6 +70,36 @@ export const cambiarContrasena = async (contrasenaActual, contrasenaNueva) => {
   return datosRespuesta;
 };
 
+export const autogestionTurnos = {
+  consultar: (credenciales) =>
+    clienteApi
+      .post('/autogestion-turnos/consultar', credenciales)
+      .then((respuesta) => respuesta.data),
+  obtenerDisponibilidad: (credenciales, limite = 20) =>
+    clienteApi
+      .post('/autogestion-turnos/disponibilidad', {
+        ...credenciales,
+        limite,
+      })
+      .then((respuesta) => respuesta.data),
+  cancelar: (credenciales, motivo = '') =>
+    clienteApi
+      .post('/autogestion-turnos/cancelar', {
+        ...credenciales,
+        motivo,
+      })
+      .then((respuesta) => respuesta.data),
+  reagendar: (credenciales, horario, motivo = '') =>
+    clienteApi
+      .post('/autogestion-turnos/reagendar', {
+        ...credenciales,
+        fecha: horario.fecha,
+        hora: horario.hora,
+        motivo,
+      })
+      .then((respuesta) => respuesta.data),
+};
+
 export const portalAfiliado = {
   obtenerPerfil: () =>
     clienteApi
@@ -126,6 +156,10 @@ export const portalAfiliado = {
   cancelarTurno: (id) =>
     clienteApi
       .post(`/portal-afiliado/turnos/${id}/cancelar`)
+      .then((respuesta) => respuesta.data),
+  reagendarTurno: (id, datos) =>
+    clienteApi
+      .post(`/portal-afiliado/turnos/${id}/reagendar`, datos)
       .then((respuesta) => respuesta.data),
 };
 
