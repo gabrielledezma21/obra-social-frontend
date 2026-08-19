@@ -71,9 +71,8 @@ export default function GestionPublicaTurno() {
     setBuscandoDisponibilidad(true);
 
     try {
-      const horarios = await autogestionTurnos.obtenerDisponibilidad(
-        credenciales
-      );
+      const horarios =
+        await autogestionTurnos.obtenerDisponibilidad(credenciales);
       setDisponibilidad(horarios);
       if (horarios.length === 0) {
         setMensaje('No encontramos otros horarios disponibles por el momento.');
@@ -246,9 +245,7 @@ export default function GestionPublicaTurno() {
                       onClick={buscarDisponibilidad}
                       disabled={buscandoDisponibilidad}
                     >
-                      {buscandoDisponibilidad
-                        ? 'Buscando...'
-                        : 'Cambiar turno'}
+                      {buscandoDisponibilidad ? 'Buscando...' : 'Cambiar turno'}
                     </Button>
                     <Button color="error" variant="outlined" onClick={cancelar}>
                       Cancelar turno
