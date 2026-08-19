@@ -34,8 +34,12 @@ test('el dashboard incluye todos los planes en todos los meses', () => {
   const dashboard = leer('src/services/dashboard.js');
   const grafico = leer('src/components/dashboard/PlanesMedicosPorMes.jsx');
 
-  assert.match(dashboard, /planesDisponibles = new Set\(\)/);
+  assert.match(dashboard, /ORDEN_PLANES_PRINCIPALES = \['210', '310', '410', '510'\]/);
+  assert.match(dashboard, /planesDisponibles = new Set\(ORDEN_PLANES_PRINCIPALES\)/);
+  assert.match(dashboard, /month: 'long'/);
   assert.match(dashboard, /cantidades\[plan\] \?\? 0/);
   assert.match(grafico, /flatMap\(\(periodo\) => Object\.keys\(periodo\.planes \|\| \{\}\)\)/);
   assert.match(grafico, /periodo\.planes\?\.\[plan\] \?\? 0/);
+  assert.match(grafico, /label: `Plan \$\{key\}`/);
+  assert.match(grafico, /Altas nuevas de afiliados por plan en cada mes/);
 });
