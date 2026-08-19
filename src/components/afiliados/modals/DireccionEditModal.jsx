@@ -22,8 +22,38 @@ import {
   useFormValidationContext,
 } from '../../../context/FormValidationContext';
 
+const normalizarTexto = (valor) =>
+  String(valor ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
+
+const claveDireccion = (direccion = {}) =>
+  [
+    normalizarTexto(direccion.calle),
+    normalizarTexto(Number(direccion.altura)),
+    normalizarTexto(direccion.pisoDepto),
+    normalizarTexto(direccion.localidad),
+    normalizarTexto(direccion.codigoPostal),
+    normalizarTexto(
+      direccion.provincia?.nombre ??
+        direccion.provincia?.id ??
+        direccion.provinciaId
+    ),
+  ].join('|');
+
+const repiteDomicilioTitular = (direcciones, direccionesTitular) => {
+  const clavesTitular = new Set(direccionesTitular.map(claveDireccion));
+  return direcciones.some((direccion) =>
+    clavesTitular.has(claveDireccion(direccion))
+  );
+};
+
 const DireccionEditContent = ({
   direcciones,
+  direccionesTitular,
   setDirecciones,
   afiliado,
   modalLoading,
@@ -32,14 +62,17 @@ const DireccionEditContent = ({
   usarDomicilioPropio,
 }) => {
   const { setValidationError, clearErrors } = useFormValidationContext();
+  const [errorDomicilio, setErrorDomicilio] = useState('');
 
   const handleDireccionesChange = (field, nuevasDirecciones) => {
     setDirecciones(nuevasDirecciones);
+    setErrorDomicilio('');
     clearErrors();
   };
 
   const handleGuardar = async () => {
     clearErrors();
+    setErrorDomicilio('');
 
     const validation = validateDireccionesArray(direcciones);
 
@@ -48,8 +81,20 @@ const DireccionEditContent = ({
       return;
     }
 
-    await updateDirecciones(direcciones, { usarDomicilioPropio });
-    onClose();
+    if (
+      usarDomicilioPropio &&
+      repiteDomicilioTitular(direcciones, direccionesTitular)
+    ) {
+      setErrorDomicilio(
+        'El domicilio propio debe ser diferente al domicilio del titular. Si viven en el mismo domicilio, mantené el domicilio compartido.'
+      );
+      return;
+    }
+
+    const actualizado = await updateDirecciones(direcciones, {
+      usarDomicilioPropio,
+    });
+    if (actualizado) onClose();
   };
 
   return (
@@ -57,9 +102,15 @@ const DireccionEditContent = ({
       <DialogContent dividers>
         {usarDomicilioPropio && (
           <Alert severity="info" sx={{ mb: 2 }}>
-            Al guardar, este integrante dejará de compartir el domicilio del
-            titular. Los futuros cambios en el domicilio familiar no afectarán
-            su dirección propia.
+            Ingresá un domicilio diferente al del titular. Al guardar, este
+            integrante dejará de compartir el domicilio familiar y los futuros
+            cambios del titular no afectarán su dirección propia.
+          </Alert>
+        )}
+
+        {errorDomicilio && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {errorDomicilio}
           </Alert>
         )}
 
@@ -100,6 +151,7 @@ export default function DireccionEditModal({
 }) {
   const { afiliado, updateDirecciones } = useAfiliado();
   const [direcciones, setDirecciones] = useState([]);
+  const [direccionesTitular, setDireccionesTitular] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
 
   useEffect(() => {
@@ -129,11 +181,17 @@ export default function DireccionEditModal({
           }
         );
 
-        setDirecciones(
-          direccionesNormalizadas.length > 0
-            ? direccionesNormalizadas
-            : [newDireccion()]
-        );
+        if (usarDomicilioPropio) {
+          setDireccionesTitular(direccionesNormalizadas);
+          setDirecciones([newDireccion()]);
+        } else {
+          setDireccionesTitular([]);
+          setDirecciones(
+            direccionesNormalizadas.length > 0
+              ? direccionesNormalizadas
+              : [newDireccion()]
+          );
+        }
       } catch (err) {
         console.error('Error cargando direcciones:', err);
       } finally {
@@ -142,7 +200,7 @@ export default function DireccionEditModal({
     };
 
     loadData();
-  }, [open, afiliado]);
+  }, [open, afiliado, usarDomicilioPropio]);
 
   if (!afiliado) return null;
 
@@ -166,6 +224,7 @@ export default function DireccionEditModal({
       <FormValidationProvider>
         <DireccionEditContent
           direcciones={direcciones}
+          direccionesTitular={direccionesTitular}
           setDirecciones={setDirecciones}
           afiliado={afiliado}
           modalLoading={modalLoading}
@@ -186,6 +245,7 @@ DireccionEditModal.propTypes = {
 
 DireccionEditContent.propTypes = {
   direcciones: PropTypes.array.isRequired,
+  direccionesTitular: PropTypes.array.isRequired,
   setDirecciones: PropTypes.func.isRequired,
   afiliado: PropTypes.object.isRequired,
   modalLoading: PropTypes.bool.isRequired,
