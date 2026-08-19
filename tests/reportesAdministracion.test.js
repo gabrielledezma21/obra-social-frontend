@@ -46,7 +46,7 @@ test('el dashboard incluye todos los planes en todos los meses', () => {
   assert.match(dashboard, /cantidades\[plan\] \?\? 0/);
   assert.match(
     grafico,
-    /flatMap\(\(periodo\) => Object\.keys\(periodo\.planes \|\| \{\}\)\)/
+    /flatMap\(\(periodo\) =>\s*Object\.keys\(periodo\.planes \|\| \{\}\)/
   );
   assert.match(grafico, /periodo\.planes\?\.\[plan\] \?\? 0/);
   assert.match(grafico, /label: `Plan \$\{key\}`/);
