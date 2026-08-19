@@ -25,6 +25,7 @@ import {
   validateFechaNacimiento,
   validateFechasVigencia,
 } from '../../../utils/validations/validateFechas';
+import { obtenerFechaCalendario } from '../../../utils/fechaCalendario';
 
 export default function DatosPersonalesEditModal({ open, onClose }) {
   const { afiliado, updateDatosPersonales } = useAfiliado();
@@ -50,14 +51,10 @@ export default function DatosPersonalesEditModal({ open, onClose }) {
             nombre: afiliado.nombre || '',
             apellido: afiliado.apellido || '',
             tipoDocumento: tipoDocumentoCompleto || null,
-            fechaNacimiento: afiliado.fechaNacimiento
-              ? dayjs(afiliado.fechaNacimiento).format('YYYY-MM-DD')
-              : '',
-            vigenciaInicio: afiliado.vigenciaInicio
-              ? dayjs(afiliado.vigenciaInicio).format('YYYY-MM-DD')
-              : '',
+            fechaNacimiento: obtenerFechaCalendario(afiliado.fechaNacimiento),
+            vigenciaInicio: obtenerFechaCalendario(afiliado.vigenciaInicio),
             vigenciaFin: afiliado.vigenciaFin
-              ? dayjs(afiliado.vigenciaFin).format('YYYY-MM-DD')
+              ? obtenerFechaCalendario(afiliado.vigenciaFin)
               : null,
             tieneFechaBaja: afiliado.tieneFechaBaja,
           });

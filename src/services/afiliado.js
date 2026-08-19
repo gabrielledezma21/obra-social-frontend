@@ -48,7 +48,14 @@ const construirDatosAfiliado = (formulario, opciones = {}) => ({
     .filter(Boolean),
   emails: formulario.emails ?? [],
   telefonos: formulario.telefonos ?? [],
-  direcciones: construirDirecciones(formulario.direcciones),
+  direcciones: construirDirecciones(
+    opciones.direcciones ?? formulario.direcciones
+  ),
+  comparteDomicilioTitular: Boolean(
+    opciones.comparteDomicilioTitular ??
+      formulario.comparteDomicilioTitular ??
+      formulario.usaMismaDireccionTitular
+  ),
   plan: String(
     opciones.plan ??
       formulario.cobertura?.plan ??
@@ -56,6 +63,10 @@ const construirDatosAfiliado = (formulario, opciones = {}) => ({
       ''
   ),
   fechaAlta: convertirAFecha(opciones.fechaAlta ?? formulario.vigenciaInicio),
+  fechaBaja: convertirAFecha(
+    opciones.fechaBaja ??
+      (formulario.tieneFechaBaja ? formulario.vigenciaFin : null)
+  ),
   afiliadoTitularId: opciones.afiliadoTitularId ?? null,
 });
 
@@ -74,6 +85,38 @@ const obtenerListado = async (
   );
 
   return formatearListadoAfiliados(paginar(afiliadosFiltrados, pagina, limite));
+};
+
+const crearFamiliar = (familiar, titularId, datosTitular, datosAfiliado) =>
+  clienteApi.post(
+    '/afiliados',
+    construirDatosAfiliado(familiar, {
+      afiliadoTitularId: titularId,
+      plan: datosTitular.plan,
+      fechaAlta: familiar.usaMismaVigenciaTitular
+        ? datosTitular.fechaAlta
+        : familiar.vigenciaInicio,
+      fechaBaja: familiar.usaMismaVigenciaTitular
+        ? datosTitular.fechaBaja
+        : familiar.tieneFechaBaja
+          ? familiar.vigenciaFin
+          : null,
+      comparteDomicilioTitular: familiar.usaMismaDireccionTitular,
+      direcciones: familiar.usaMismaDireccionTitular
+        ? datosAfiliado.direcciones
+        : familiar.direcciones,
+    })
+  );
+
+const revertirAltaIncompleta = async (titularId) => {
+  try {
+    await clienteApi.delete(`/afiliados/${titularId}`);
+  } catch (errorRollback) {
+    console.error(
+      'No se pudo revertir el alta incompleta del grupo familiar:',
+      errorRollback
+    );
+  }
 };
 
 export const createAfiliado = async (datosAfiliado) => {
@@ -97,20 +140,16 @@ export const createAfiliado = async (datosAfiliado) => {
   const { data: titular } = await clienteApi.post('/afiliados', datosTitular);
   const titularId = obtenerId(titular);
 
-  await Promise.all(
-    (datosAfiliado.grupoFamiliar ?? []).map((familiar) =>
-      clienteApi.post(
-        '/afiliados',
-        construirDatosAfiliado(familiar, {
-          afiliadoTitularId: titularId,
-          plan: datosTitular.plan,
-          fechaAlta: familiar.usaMismaVigenciaTitular
-            ? datosTitular.fechaAlta
-            : familiar.vigenciaInicio,
-        })
+  try {
+    await Promise.all(
+      (datosAfiliado.grupoFamiliar ?? []).map((familiar) =>
+        crearFamiliar(familiar, titularId, datosTitular, datosAfiliado)
       )
-    )
-  );
+    );
+  } catch (error) {
+    await revertirAltaIncompleta(titularId);
+    throw error;
+  }
 
   return { ...titular, id: titularId };
 };
@@ -239,18 +278,28 @@ export const getReporteAfiliadoById = async (id) => {
   return data;
 };
 
-export const updateAfiliadoDatosPersonales = async (id, datos) =>
-  (
-    await clienteApi.put(`/afiliados/${id}`, {
-      tipoDocumento: obtenerTipoDocumento(datos.tipoDocumentoId),
-      dni: Number(datos.numeroDocumento),
-      nombre: datos.nombre,
-      apellido: datos.apellido,
-      fechaNacimiento: convertirAFecha(datos.fechaNacimiento),
-      fechaAlta: datos.vigenciaInicio,
-      fechaBaja: datos.tieneFechaBaja ? datos.vigenciaFin : null,
-    })
-  ).data;
+export const updateAfiliadoDatosPersonales = async (
+  id,
+  datos,
+  incluirFechaBaja = true
+) => {
+  const payload = {
+    tipoDocumento: obtenerTipoDocumento(datos.tipoDocumentoId),
+    dni: Number(datos.numeroDocumento),
+    nombre: datos.nombre,
+    apellido: datos.apellido,
+    fechaNacimiento: convertirAFecha(datos.fechaNacimiento),
+    fechaAlta: convertirAFecha(datos.vigenciaInicio),
+  };
+
+  if (incluirFechaBaja) {
+    payload.fechaBaja = datos.tieneFechaBaja
+      ? convertirAFecha(datos.vigenciaFin)
+      : null;
+  }
+
+  return (await clienteApi.put(`/afiliados/${id}`, payload)).data;
+};
 
 export const updateAfiliadoCobertura = async (id, datos) =>
   (await clienteApi.put(`/afiliados/${id}`, { plan: String(datos.planId) }))
@@ -259,10 +308,22 @@ export const updateAfiliadoCobertura = async (id, datos) =>
 export const updateAfiliadoDatosContacto = async (id, datos) =>
   (await clienteApi.put(`/afiliados/${id}`, datos)).data;
 
-export const updateAfiliadoDirecciones = async (id, datos) =>
+export const updateAfiliadoDirecciones = async (
+  id,
+  datos,
+  { usarDomicilioPropio = false } = {}
+) =>
   (
     await clienteApi.put(`/afiliados/${id}`, {
       direcciones: construirDirecciones(datos.direcciones),
+      ...(usarDomicilioPropio ? { comparteDomicilioTitular: false } : {}),
+    })
+  ).data;
+
+export const usarDomicilioTitularAfiliado = async (id) =>
+  (
+    await clienteApi.put(`/afiliados/${id}`, {
+      comparteDomicilioTitular: true,
     })
   ).data;
 
@@ -275,6 +336,8 @@ export const addDependiente = async (idAfiliado, datosDependiente) => {
         afiliadoTitularId: idAfiliado,
         plan: titular.Contrato?.plan?.plan,
         fechaAlta: titular.vigenciaInicio,
+        fechaBaja: titular.vigenciaFin,
+        comparteDomicilioTitular: datosDependiente.usaMismaDireccionTitular,
       })
     )
   ).data;

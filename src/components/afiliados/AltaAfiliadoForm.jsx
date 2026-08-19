@@ -68,6 +68,7 @@ export default function AltaAfiliadoForm() {
   const [loading, setLoading] = useState(true);
   const [showError, setShowError] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [mensajeError, setMensajeError] = useState('');
 
   const { validateBeforeSave } = useFormValidation(validateAltaAfiliado);
   const { setValidationError, clearErrors } = useFormValidationContext();
@@ -121,6 +122,7 @@ export default function AltaAfiliadoForm() {
     validateBeforeSave(dataToValidate, async () => {
       try {
         setSaving(true);
+        setMensajeError('');
         await sleepIfLocal(1500);
 
         const data = await createAfiliado(afiliadoData);
@@ -130,9 +132,9 @@ export default function AltaAfiliadoForm() {
         console.error('Error al guardar el afiliado:', err);
 
         const errorMessage = err.response?.data?.message || err.message;
-        const statusCode = err.response?.status;
+        setMensajeError(errorMessage);
 
-        if (handleBackendError(errorMessage, statusCode)) {
+        if (handleBackendError(errorMessage)) {
           setShowError(false);
         } else {
           setShowError(true);
@@ -143,38 +145,34 @@ export default function AltaAfiliadoForm() {
     });
   };
 
-  const handleBackendError = (errorMessage, statusCode) => {
-    // Error de documento duplicado
-    if (errorMessage.includes('ya está registrado') || statusCode === 400) {
-      if (errorMessage.includes('miembro')) {
-        setValidationError('grupoFamiliar-0-numeroDocumento', errorMessage);
+  const handleBackendError = (errorMessage) => {
+    if (!errorMessage?.includes('ya está registrado')) return false;
 
-        const grupoFamiliarSection = document.querySelector(
-          '[data-section="grupo-familiar"]'
-        );
-        if (grupoFamiliarSection) {
-          grupoFamiliarSection.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-          });
-        }
-        return true;
-      } else {
-        setValidationError('numeroDocumento', errorMessage);
-        const campoDocumento = document.querySelector(
-          '[name="numeroDocumento"]'
-        );
-        if (campoDocumento) {
-          campoDocumento.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-          });
-          campoDocumento.focus();
-        }
-        return true;
+    if (errorMessage.includes('miembro')) {
+      setValidationError('grupoFamiliar-0-numeroDocumento', errorMessage);
+
+      const grupoFamiliarSection = document.querySelector(
+        '[data-section="grupo-familiar"]'
+      );
+      if (grupoFamiliarSection) {
+        grupoFamiliarSection.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
       }
+      return true;
     }
-    return false;
+
+    setValidationError('numeroDocumento', errorMessage);
+    const campoDocumento = document.querySelector('[name="numeroDocumento"]');
+    if (campoDocumento) {
+      campoDocumento.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+      campoDocumento.focus();
+    }
+    return true;
   };
 
   const handleCancelar = useCallback(
@@ -260,7 +258,10 @@ export default function AltaAfiliadoForm() {
         open={showError}
         autoHideDuration={4000}
         onClose={() => setShowError(false)}
-        message="Ocurrió un error al guardar el afiliado. Por favor, revisa los campos."
+        message={
+          mensajeError ||
+          'Ocurrió un error al guardar el afiliado. Por favor, revisa los campos.'
+        }
       />
 
       <SuccessSnackbar

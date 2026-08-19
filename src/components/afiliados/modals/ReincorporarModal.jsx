@@ -1,32 +1,28 @@
-import { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  FormControlLabel,
-  Checkbox,
   Alert,
   Typography,
   Box,
 } from '@mui/material';
 import { useAfiliado } from '../../../context/AfiliadoContext';
 import ButtonsSection from '../../common/forms/FormActions';
+import { formatearFechaCalendario } from '../../../utils/fechaCalendario';
 
 export default function ReincorporarModal({ open, onClose }) {
   const { afiliado, reincorporar } = useAfiliado();
-  const [reincorporarGrupoFamiliar, setReincorporarGrupoFamiliar] =
-    useState(false);
 
   const handleConfirmar = async () => {
-    const result = await reincorporar(reincorporarGrupoFamiliar);
+    const result = await reincorporar();
     if (result.success) {
       onClose();
     }
   };
 
-  const esTitular = !afiliado?.titularId;
+  const esTitular = afiliado?.parentesco === 'Titular';
   const tieneDependientes = esTitular && afiliado?.dependientes?.length > 0;
 
   return (
@@ -36,7 +32,9 @@ export default function ReincorporarModal({ open, onClose }) {
       <DialogContent dividers>
         <Box sx={{ mb: 3 }}>
           <Alert severity="info" sx={{ mb: 2 }}>
-            Esta acción eliminará la fecha de baja del afiliado y lo reactivará.
+            {tieneDependientes
+              ? 'Esta acción eliminará la fecha de baja del titular y de todo su grupo familiar.'
+              : 'Esta acción eliminará la fecha de baja del afiliado y lo reactivará.'}
           </Alert>
 
           <Typography variant="body1" sx={{ mb: 2 }}>
@@ -51,28 +49,14 @@ export default function ReincorporarModal({ open, onClose }) {
           {afiliado?.vigenciaFin && (
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               Fecha de baja actual:{' '}
-              {new Date(afiliado.vigenciaFin).toLocaleDateString()}
+              {formatearFechaCalendario(afiliado.vigenciaFin)}
             </Typography>
           )}
 
-          {esTitular && tieneDependientes && (
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={reincorporarGrupoFamiliar}
-                  onChange={(e) =>
-                    setReincorporarGrupoFamiliar(e.target.checked)
-                  }
-                />
-              }
-              label="Reincorporar también a todos los miembros del grupo familiar"
-            />
-          )}
-
-          {reincorporarGrupoFamiliar && (
+          {tieneDependientes && (
             <Alert severity="warning" sx={{ mt: 1 }}>
-              Se reincorporarán todos los miembros del grupo familiar que tengan
-              fecha de baja.
+              También se reincorporarán automáticamente todos los miembros del
+              grupo familiar que tengan fecha de baja.
             </Alert>
           )}
         </Box>

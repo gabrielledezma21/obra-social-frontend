@@ -13,6 +13,7 @@ import {
   deleteAfiliadoById,
   updateAfiliadoDatosContacto,
   updateAfiliadoDirecciones,
+  usarDomicilioTitularAfiliado,
   addDependiente,
   modificarFechaBajaAfiliado,
   reincorporarAfiliado,
@@ -53,11 +54,14 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     fetchAfiliado();
   }, [afiliadoData, fetchAfiliado]);
 
-  const finishWithMessage = ({ success, error }) => {
+  const finishWithMessage = ({ success, error: errorMessage }) => {
     if (success) setSuccessMessage(success);
-    if (error) setError(error);
+    if (errorMessage) setError(errorMessage);
     setGlobalLoading(false);
   };
+
+  const parentesco = afiliado?.parentesco?.relacion ?? afiliado?.parentesco;
+  const esTitular = parentesco === 'Titular';
 
   const updateDatosPersonales = async (data) => {
     if (!afiliado?.id) return;
@@ -75,7 +79,16 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     };
 
     try {
-      await updateAfiliadoDatosPersonales(afiliado.id, payload);
+      await updateAfiliadoDatosPersonales(afiliado.id, payload, !esTitular);
+
+      if (esTitular) {
+        await modificarFechaBajaAfiliado(
+          afiliado.id,
+          data.tieneFechaBaja ? data.vigenciaFin : null,
+          true
+        );
+      }
+
       const updated = await fetchAfiliado();
       finishWithMessage({ success: 'Datos personales actualizados con éxito' });
       return updated;
@@ -98,9 +111,7 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
       finishWithMessage({ success: 'Cobertura actualizada con éxito' });
       return updated;
     } catch {
-      finishWithMessage({
-        error: 'No se pudo actualizar la cobertura.',
-      });
+      finishWithMessage({ error: 'No se pudo actualizar la cobertura.' });
     }
   };
 
@@ -131,7 +142,10 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     }
   };
 
-  const updateDirecciones = async (direccionesData) => {
+  const updateDirecciones = async (
+    direccionesData,
+    { usarDomicilioPropio = false } = {}
+  ) => {
     if (!afiliado?.id) return;
     setGlobalLoading(true);
 
@@ -145,12 +159,16 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
         provinciaId: direccionItem.provincia?.id || direccionItem.provinciaId,
       }));
 
-      const payload = { direcciones: direccionesPayload };
-
-      await updateAfiliadoDirecciones(afiliado.id, payload);
+      await updateAfiliadoDirecciones(
+        afiliado.id,
+        { direcciones: direccionesPayload },
+        { usarDomicilioPropio }
+      );
       const updated = await fetchAfiliado();
       finishWithMessage({
-        success: 'Direcciones actualizadas con éxito',
+        success: usarDomicilioPropio
+          ? 'El afiliado ahora utiliza un domicilio propio.'
+          : 'Direcciones actualizadas con éxito',
       });
       return updated;
     } catch {
@@ -160,12 +178,36 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     }
   };
 
+  const usarDomicilioTitular = async () => {
+    if (!afiliado?.id || esTitular) return false;
+    setGlobalLoading(true);
+
+    try {
+      await usarDomicilioTitularAfiliado(afiliado.id);
+      const updated = await fetchAfiliado();
+      finishWithMessage({
+        success: 'El afiliado ahora comparte el domicilio del titular.',
+      });
+      return { success: true, updated };
+    } catch {
+      finishWithMessage({
+        error: 'No se pudo asignar el domicilio del titular.',
+      });
+      return { success: false };
+    }
+  };
+
   const darDeBaja = async (vigenciaFin) => {
     if (!afiliado?.id) return false;
     setGlobalLoading(true);
 
     try {
-      await deleteAfiliadoById(afiliado.id, vigenciaFin);
+      if (esTitular) {
+        await modificarFechaBajaAfiliado(afiliado.id, vigenciaFin, true);
+      } else {
+        await deleteAfiliadoById(afiliado.id, vigenciaFin);
+      }
+
       const updated = await fetchAfiliado();
       finishWithMessage({
         success: `Afiliado dado de baja exitosamente. Fecha de baja: ${vigenciaFin}`,
@@ -200,15 +242,13 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     if (!afiliado?.id) return false;
     setGlobalLoading(true);
 
+    const aplicarAlGrupo = esTitular || aplicarAGrupoFamiliar;
+
     try {
-      await modificarFechaBajaAfiliado(
-        afiliado.id,
-        fechaBaja,
-        aplicarAGrupoFamiliar
-      );
+      await modificarFechaBajaAfiliado(afiliado.id, fechaBaja, aplicarAlGrupo);
       const updated = await fetchAfiliado();
       finishWithMessage({
-        success: `Fecha de baja modificada exitosamente${aplicarAGrupoFamiliar ? ' para todo el grupo familiar' : ''}`,
+        success: `Fecha de baja modificada exitosamente${aplicarAlGrupo ? ' para todo el grupo familiar' : ''}`,
       });
       return { success: true, updated };
     } catch {
@@ -221,11 +261,13 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
     if (!afiliado?.id) return false;
     setGlobalLoading(true);
 
+    const reincorporarGrupo = esTitular || reincorporarGrupoFamiliar;
+
     try {
-      await reincorporarAfiliado(afiliado.id, reincorporarGrupoFamiliar);
+      await reincorporarAfiliado(afiliado.id, reincorporarGrupo);
       const updated = await fetchAfiliado();
       finishWithMessage({
-        success: `Afiliado reincorporado exitosamente${reincorporarGrupoFamiliar ? ' junto con su grupo familiar' : ''}`,
+        success: `Afiliado reincorporado exitosamente${reincorporarGrupo ? ' junto con su grupo familiar' : ''}`,
       });
       return { success: true, updated };
     } catch {
@@ -247,6 +289,7 @@ export function AfiliadoProvider({ idAfiliado, afiliadoData, children }) {
         updateCobertura,
         updateDatosContacto,
         updateDirecciones,
+        usarDomicilioTitular,
         darDeBaja,
         agregarDependiente,
         modificarFechaBaja,

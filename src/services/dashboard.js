@@ -1,6 +1,7 @@
 import api from './api';
 import { getId, normalizeAddress } from './apiAdapters';
 import { formatDireccion } from '../utils/formats/formatDireccion';
+import { formatearFechaCalendario } from '../utils/fechaCalendario';
 
 let dashboardRequest = null;
 
@@ -107,7 +108,7 @@ export const getAfiliadosConBaja = async () => {
     .map((member) => ({
       id: getId(member),
       nombre: `${member.nombre ?? ''} ${member.apellido ?? ''}`.trim(),
-      fecha: new Date(member.fechaBaja).toLocaleDateString('es-AR'),
+      fecha: formatearFechaCalendario(member.fechaBaja),
     }));
 };
 
