@@ -3,6 +3,21 @@ import { BarChart } from '@mui/x-charts/BarChart';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useDashboard } from '../../context/DashboardContext';
 
+const ORDEN_PLANES_PRINCIPALES = ['210', '310', '410', '510'];
+
+const ordenarPlanes = (planes) => {
+  const planesPrincipales = ORDEN_PLANES_PRINCIPALES.filter((plan) =>
+    planes.includes(plan)
+  );
+  const planesAdicionales = planes
+    .filter((plan) => !ORDEN_PLANES_PRINCIPALES.includes(plan))
+    .sort((primero, segundo) =>
+      primero.localeCompare(segundo, 'es', { numeric: true })
+    );
+
+  return [...planesPrincipales, ...planesAdicionales];
+};
+
 export default function PlanesMedicosPorMes() {
   const { planesMedicosPorMes = [] } = useDashboard();
 
@@ -45,13 +60,11 @@ export default function PlanesMedicosPorMes() {
     );
   }
 
-  const planKeys = [
+  const planKeys = ordenarPlanes([
     ...new Set(
       planesMedicosPorMes.flatMap((periodo) => Object.keys(periodo.planes || {}))
     ),
-  ].sort((primero, segundo) =>
-    primero.localeCompare(segundo, 'es', { numeric: true })
-  );
+  ]);
 
   const dataset = planesMedicosPorMes.map((periodo) => ({
     mes: periodo.mes,
@@ -64,15 +77,15 @@ export default function PlanesMedicosPorMes() {
 
   const valueFormatter = (value) => `${value}`;
   const chartSetting = {
-    yAxis: [{ label: 'Cantidad', width: 60 }],
-    height: 280,
+    yAxis: [{ label: 'Altas nuevas', width: 72 }],
+    height: 300,
     sx: { [`& .MuiChartsLegend-root`]: { mt: 1 } },
     borderRadius: 4,
   };
 
   const series = planKeys.map((key, index) => ({
     dataKey: key,
-    label: key,
+    label: `Plan ${key}`,
     color: colors[index % colors.length],
     valueFormatter,
     barRadius: 6,
@@ -110,7 +123,8 @@ export default function PlanesMedicosPorMes() {
           color="text.secondary"
           sx={{ mt: 2, textAlign: 'center' }}
         >
-          Cantidad de afiliados por plan médico en los últimos meses
+          Altas nuevas de afiliados por plan en cada mes. Cada grupo muestra
+          los planes lado a lado para comparar su crecimiento mensual.
         </Typography>
       </CardContent>
     </Card>
