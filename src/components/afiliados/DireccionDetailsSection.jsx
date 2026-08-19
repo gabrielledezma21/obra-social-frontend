@@ -1,24 +1,67 @@
 import { useState } from 'react';
-import { Typography, Stack, Box } from '@mui/material';
+import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import PlaceIcon from '@mui/icons-material/Place';
 import DetailsSection from '../common/details/DetailsSection';
 import DireccionEditModal from './modals/DireccionEditModal';
 import { useAfiliado } from '../../context/AfiliadoContext';
 
 export default function DireccionDetailsSection() {
-  const { afiliado } = useAfiliado();
+  const { afiliado, usarDomicilioTitular } = useAfiliado();
   const [openModal, setOpenModal] = useState(false);
+  const [crearDomicilioPropio, setCrearDomicilioPropio] = useState(false);
 
   if (!afiliado) return null;
 
   const domicilios = afiliado.domicilios || [];
+  const parentesco = afiliado.parentesco?.relacion ?? afiliado.parentesco;
+  const esTitular = parentesco === 'Titular';
+  const comparteDomicilio = Boolean(afiliado.comparteDomicilioTitular);
 
-  const handleOpen = () => setOpenModal(true);
-  const handleClose = () => setOpenModal(false);
+  const handleOpen = () => {
+    setCrearDomicilioPropio(false);
+    setOpenModal(true);
+  };
+
+  const handleUsarDomicilioPropio = () => {
+    setCrearDomicilioPropio(true);
+    setOpenModal(true);
+  };
+
+  const handleClose = () => {
+    setOpenModal(false);
+    setCrearDomicilioPropio(false);
+  };
+
+  const accionDomicilio = esTitular ? null : comparteDomicilio ? (
+    <Button size="small" variant="outlined" onClick={handleUsarDomicilioPropio}>
+      Usar domicilio propio
+    </Button>
+  ) : (
+    <Button size="small" variant="outlined" onClick={usarDomicilioTitular}>
+      Usar domicilio del titular
+    </Button>
+  );
 
   return (
     <>
-      <DetailsSection title="Direcciones" icon={PlaceIcon} onEdit={handleOpen}>
+      <DetailsSection
+        title="Direcciones"
+        icon={PlaceIcon}
+        onEdit={esTitular || !comparteDomicilio ? handleOpen : undefined}
+        editTooltip={
+          esTitular
+            ? 'Editar domicilio familiar'
+            : 'Editar domicilio propio'
+        }
+        action={accionDomicilio}
+      >
+        {comparteDomicilio && !esTitular && (
+          <Alert severity="info" sx={{ mb: 1 }}>
+            Domicilio compartido con el titular. Los cambios se gestionan desde
+            el titular del grupo familiar.
+          </Alert>
+        )}
+
         <Stack component="ul" spacing={2} sx={{ pl: 2, m: 0 }}>
           {domicilios.length > 0 ? (
             domicilios.map((domicilio) => (
@@ -30,7 +73,7 @@ export default function DireccionDetailsSection() {
                 </Typography>
                 <Typography>
                   {domicilio.Direccion.localidad},{' '}
-                  {domicilio.Direccion.Provincia.nombre}
+                  {domicilio.Direccion.Provincia?.nombre || 'Sin provincia'}
                   {domicilio.Direccion.codigoPostal &&
                     ` (CP: ${domicilio.Direccion.codigoPostal})`}
                 </Typography>
@@ -42,7 +85,11 @@ export default function DireccionDetailsSection() {
         </Stack>
       </DetailsSection>
 
-      <DireccionEditModal open={openModal} onClose={handleClose} />
+      <DireccionEditModal
+        open={openModal}
+        onClose={handleClose}
+        usarDomicilioPropio={crearDomicilioPropio}
+      />
     </>
   );
 }
