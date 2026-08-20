@@ -23,11 +23,31 @@ export const formatearFechaTurno = (valor) => {
   return `${coincidencia[3]}/${coincidencia[2]}/${coincidencia[1]}`;
 };
 
+const ordenarAscendente = (turnos) =>
+  turnos.sort((primero, segundo) => {
+    const momentoPrimero = obtenerMomentoTurno(primero)?.getTime() ?? Infinity;
+    const momentoSegundo = obtenerMomentoTurno(segundo)?.getTime() ?? Infinity;
+    return momentoPrimero - momentoSegundo;
+  });
+
+const ordenarDescendente = (turnos) =>
+  turnos.sort((primero, segundo) => {
+    const momentoPrimero = obtenerMomentoTurno(primero)?.getTime() ?? 0;
+    const momentoSegundo = obtenerMomentoTurno(segundo)?.getTime() ?? 0;
+    return momentoSegundo - momentoPrimero;
+  });
+
 export const separarTurnosAfiliado = (turnos, ahora = Date.now()) => {
   const proximos = [];
   const anteriores = [];
+  const cancelados = [];
 
   turnos.forEach((turno) => {
+    if (turno.estado === 'CANCELADO') {
+      cancelados.push(turno);
+      return;
+    }
+
     const momento = obtenerMomentoTurno(turno);
     const esProximo =
       turno.estado === 'RESERVADO' &&
@@ -38,19 +58,11 @@ export const separarTurnosAfiliado = (turnos, ahora = Date.now()) => {
     else anteriores.push(turno);
   });
 
-  proximos.sort((primero, segundo) => {
-    const momentoPrimero = obtenerMomentoTurno(primero)?.getTime() ?? Infinity;
-    const momentoSegundo = obtenerMomentoTurno(segundo)?.getTime() ?? Infinity;
-    return momentoPrimero - momentoSegundo;
-  });
+  ordenarAscendente(proximos);
+  ordenarDescendente(anteriores);
+  ordenarDescendente(cancelados);
 
-  anteriores.sort((primero, segundo) => {
-    const momentoPrimero = obtenerMomentoTurno(primero)?.getTime() ?? 0;
-    const momentoSegundo = obtenerMomentoTurno(segundo)?.getTime() ?? 0;
-    return momentoSegundo - momentoPrimero;
-  });
-
-  return { proximos, anteriores };
+  return { proximos, anteriores, cancelados };
 };
 
 export const obtenerEstadoVisualTurno = (turno, ahora = Date.now()) => {
