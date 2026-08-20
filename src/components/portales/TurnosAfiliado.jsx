@@ -59,6 +59,7 @@ export default function TurnosAfiliado({
 }) {
   const [modo, setModo] = useState('listado');
   const [pestanaTurnos, setPestanaTurnos] = useState(0);
+  const [mensajeReserva, setMensajeReserva] = useState('');
 
   useEffect(() => {
     const manejarNavegacionTurnos = (evento) => {
@@ -83,14 +84,19 @@ export default function TurnosAfiliado({
         manejarNavegacionTurnos
       );
   }, []);
-  const { proximos, anteriores } = separarTurnosAfiliado(turnos);
-  const turnosVisibles = pestanaTurnos === 0 ? proximos : anteriores;
+
+  const { proximos, anteriores, cancelados } = separarTurnosAfiliado(turnos);
+  const turnosPorPestana = [proximos, anteriores, cancelados];
+  const turnosVisibles = turnosPorPestana[pestanaTurnos] || [];
 
   const reservarYVolver = async (horario) => {
     const reservado = await reservarTurno(horario);
     if (reservado) {
       setModo('listado');
       setPestanaTurnos(0);
+      setMensajeReserva(
+        'Turno reservado correctamente. Tu código de reserva queda visible en Mis turnos y, si el correo está configurado, recibirás también el enlace seguro para gestionarlo.'
+      );
     }
   };
 
@@ -146,32 +152,47 @@ export default function TurnosAfiliado({
             Turnos
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Consultá tus próximos turnos y el historial de turnos anteriores.
+            Consultá tus próximos turnos, los anteriores y los cancelados.
           </Typography>
         </Box>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => setModo('sacar')}
+          onClick={() => {
+            setMensajeReserva('');
+            setModo('sacar');
+          }}
           sx={{ textTransform: 'none' }}
         >
           Sacar turno
         </Button>
       </Stack>
 
+      {mensajeReserva && (
+        <Alert severity="success" onClose={() => setMensajeReserva('')}>
+          {mensajeReserva}
+        </Alert>
+      )}
+
       <Tabs
         value={pestanaTurnos}
         onChange={(_evento, valor) => setPestanaTurnos(valor)}
+        variant="scrollable"
+        scrollButtons="auto"
+        style={{ display: 'flex' }}
       >
         <Tab label={`Próximos (${proximos.length})`} />
         <Tab label={`Anteriores (${anteriores.length})`} />
+        <Tab label={`Cancelados (${cancelados.length})`} />
       </Tabs>
 
       {turnosVisibles.length === 0 ? (
         <Alert severity="info">
           {pestanaTurnos === 0
             ? 'No tenés próximos turnos reservados.'
-            : 'No hay turnos anteriores para mostrar.'}
+            : pestanaTurnos === 1
+              ? 'No hay turnos anteriores para mostrar.'
+              : 'No hay turnos cancelados para mostrar.'}
         </Alert>
       ) : (
         <Paper
@@ -209,6 +230,15 @@ export default function TurnosAfiliado({
                         <Typography variant="body2" color="text.secondary">
                           {turno.hora || 'Hora sin informar'}
                         </Typography>
+                        {turno.codigoReserva && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mt: 0.5 }}
+                          >
+                            Código: {turno.codigoReserva}
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell>
                         {turno.prestadorId?.nombre || 'Prestador'}

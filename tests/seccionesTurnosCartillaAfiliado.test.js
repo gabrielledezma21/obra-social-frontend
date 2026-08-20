@@ -8,7 +8,7 @@ import {
 
 const leer = (ruta) => readFile(new URL(`../${ruta}`, import.meta.url), 'utf8');
 
-test('clasifica turnos por fecha y hora argentina, no solo por día', () => {
+test('clasifica próximos, anteriores y cancelados por fecha y hora argentina', () => {
   const ahora = new Date('2026-08-17T15:00:00-03:00').getTime();
   const turnos = [
     {
@@ -37,7 +37,10 @@ test('clasifica turnos por fecha y hora argentina, no solo por día', () => {
     },
   ];
 
-  const { proximos, anteriores } = separarTurnosAfiliado(turnos, ahora);
+  const { proximos, anteriores, cancelados } = separarTurnosAfiliado(
+    turnos,
+    ahora
+  );
 
   assert.deepEqual(
     proximos.map((turno) => turno._id),
@@ -45,13 +48,18 @@ test('clasifica turnos por fecha y hora argentina, no solo por día', () => {
   );
   assert.deepEqual(
     anteriores.map((turno) => turno._id),
-    ['cancelado-futuro', 'pasado-hoy', 'atendido-anterior']
+    ['pasado-hoy', 'atendido-anterior']
+  );
+  assert.deepEqual(
+    cancelados.map((turno) => turno._id),
+    ['cancelado-futuro']
   );
   assert.equal(obtenerEstadoVisualTurno(turnos[0], ahora), 'Pasado');
   assert.equal(obtenerEstadoVisualTurno(turnos[1], ahora), 'Reservado');
+  assert.equal(obtenerEstadoVisualTurno(turnos[2], ahora), 'Cancelado');
 });
 
-test('Turnos es una sola sección y sacar turno es una acción del listado', async () => {
+test('Turnos muestra próximos, anteriores y cancelados aunque el layout oculte tabs principales', async () => {
   const portal = await leer('src/pages/portales/PortalAfiliado.jsx');
   const turnos = await leer('src/components/portales/TurnosAfiliado.jsx');
 
@@ -63,6 +71,8 @@ test('Turnos es una sola sección y sacar turno es una acción del listado', asy
   assert.match(turnos, />\s*Sacar turno\s*</);
   assert.match(turnos, /Próximos/);
   assert.match(turnos, /Anteriores/);
+  assert.match(turnos, /Cancelados/);
+  assert.match(turnos, /style=\{\{ display: 'flex' \}\}/);
   assert.match(turnos, /<GestionTurnosAfiliado/);
   assert.match(turnos, /Volver a turnos/);
 });
