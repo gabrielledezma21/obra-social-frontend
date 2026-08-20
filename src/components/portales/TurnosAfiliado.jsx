@@ -84,8 +84,10 @@ export default function TurnosAfiliado({
         manejarNavegacionTurnos
       );
   }, []);
-  const { proximos, anteriores } = separarTurnosAfiliado(turnos);
-  const turnosVisibles = pestanaTurnos === 0 ? proximos : anteriores;
+
+  const { proximos, anteriores, cancelados } = separarTurnosAfiliado(turnos);
+  const turnosPorPestana = [proximos, anteriores, cancelados];
+  const turnosVisibles = turnosPorPestana[pestanaTurnos] || [];
 
   const reservarYVolver = async (horario) => {
     const reservado = await reservarTurno(horario);
@@ -150,7 +152,7 @@ export default function TurnosAfiliado({
             Turnos
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Consultá tus próximos turnos y el historial de turnos anteriores.
+            Consultá tus próximos turnos, los anteriores y los cancelados.
           </Typography>
         </Box>
         <Button
@@ -175,16 +177,22 @@ export default function TurnosAfiliado({
       <Tabs
         value={pestanaTurnos}
         onChange={(_evento, valor) => setPestanaTurnos(valor)}
+        variant="scrollable"
+        scrollButtons="auto"
+        style={{ display: 'flex' }}
       >
         <Tab label={`Próximos (${proximos.length})`} />
         <Tab label={`Anteriores (${anteriores.length})`} />
+        <Tab label={`Cancelados (${cancelados.length})`} />
       </Tabs>
 
       {turnosVisibles.length === 0 ? (
         <Alert severity="info">
           {pestanaTurnos === 0
             ? 'No tenés próximos turnos reservados.'
-            : 'No hay turnos anteriores para mostrar.'}
+            : pestanaTurnos === 1
+              ? 'No hay turnos anteriores para mostrar.'
+              : 'No hay turnos cancelados para mostrar.'}
         </Alert>
       ) : (
         <Paper
